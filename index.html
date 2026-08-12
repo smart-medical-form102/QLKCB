@@ -3,11 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <title>Quản lý Hồ sơ Khám bệnh & Xuất Excel</title>
-  <!-- Thư viện SheetJS xuất file Excel -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f7f6; }
     h2 { color: #0056b3; }
+    
+    /* Giao diện khóa mật khẩu */
+    #lockScreen {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: #f4f7f6; display: flex; justify-content: center; align-items: center; z-index: 9999;
+    }
+    .login-box {
+      background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); text-align: center; width: 300px;
+    }
+    .login-box input { width: 90%; padding: 10px; margin: 15px 0; border: 1px solid #ccc; border-radius: 4px; text-align: center; font-size: 16px; }
+    .login-box button { width: 100%; padding: 10px; background-color: #0056b3; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+
+    /* Giao diện chính (Ẩn mặc định) */
+    #mainContent { display: none; }
+    
     .form-container { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; }
     .form-group { display: flex; flex-direction: column; }
@@ -20,137 +34,183 @@
     table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 0.85em; }
     th { background-color: #0056b3; color: white; }
+    .error-message { color: red; font-size: 0.8em; margin-top: 4px; display: none; }
+    .input-error { border-color: red !important; }
   </style>
 </head>
 <body>
 
-  <h2>NHẬP THÔNG TIN KHÁM BỆNH</h2>
-
-  <div class="form-container">
-    <form id="medicalForm">
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Ngày khám:</label>
-          <input type="date" id="ngayKham" required>
-        </div>
-        <div class="form-group">
-          <label>Họ và tên:</label>
-          <input type="text" id="hoTen" placeholder="Nguyễn Văn A" required>
-        </div>
-        <div class="form-group">
-          <label>Giới tính:</label>
-          <select id="gioiTinh">
-            <option value="Nam">Nam</option>
-            <option value="Nữ">Nữ</option>
-            <option value="Khác">Khác</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Năm sinh:</label>
-          <input type="number" id="namSinh" placeholder="1990">
-        </div>
-        <div class="form-group">
-          <label>Số điện thoại:</label>
-          <input type="tel" id="sdt" placeholder="0987654321">
-        </div>
-        <div class="form-group">
-          <label>Địa chỉ:</label>
-          <input type="text" id="diaChi" placeholder="Hà Nội">
-        </div>
-        <div class="form-group">
-          <label>Giải phẫu bệnh:</label>
-          <input type="text" id="giaiPhauBenh">
-        </div>
-        <div class="form-group">
-          <label>Chẩn đoán:</label>
-          <input type="text" id="chanDoan">
-        </div>
-        <div class="form-group">
-          <label>Tiền sử điều trị Iod phóng xạ:</label>
-          <input type="text" id="iodPhongXa" placeholder="VD: Đã dùng 100mCi (2022)">
-        </div>
-        <div class="form-group">
-          <label>Thuốc điều trị:</label>
-          <input type="text" id="thuocDieuTri" placeholder="VD: Levothyroxine 100mcg">
-        </div>
-        <div class="form-group">
-          <label>FT4:</label>
-          <input type="text" id="ft4" placeholder="pmol/L">
-        </div>
-        <div class="form-group">
-          <label>TSH:</label>
-          <input type="text" id="tsh" placeholder="mIU/L">
-        </div>
-        <div class="form-group">
-          <label>Tg:</label>
-          <input type="text" id="tg" placeholder="ng/mL">
-        </div>
-        <div class="form-group">
-          <label>AntiTg:</label>
-          <input type="text" id="antiTg" placeholder="IU/mL">
-        </div>
-        <div class="form-group" style="grid-column: span 2;">
-          <label>Siêu âm:</label>
-          <textarea id="sieuAm" rows="2" placeholder="Kết quả siêu âm..."></textarea>
-        </div>
-      </div>
-
-      <div class="btn-group">
-        <button type="button" class="btn-add" onclick="addPatient()">Thêm vào danh sách</button>
-        <button type="button" class="btn-export" onclick="exportToExcel()">Xuất file Excel</button>
-      </div>
-    </form>
+  <!-- MÀN HÌNH NHẬP MẬT KHẨU -->
+  <div id="lockScreen">
+    <div class="login-box">
+      <h3>XÁC NHẬN TRUY CẬP</h3>
+      <p style="font-size: 0.9em; color: #666;">Vui lòng nhập mật khẩu để dùng trang này</p>
+      <input type="password" id="passInput" placeholder="Nhập mật khẩu...">
+      <button onclick="checkPassword()">MỞ KHÓA</button>
+    </div>
   </div>
 
-  <h3>Danh sách bệnh nhân đã nhập</h3>
-  <table id="patientTable">
-    <thead>
-      <tr>
-        <th>STT</th>
-        <th>Ngày khám</th>
-        <th>Họ và tên</th>
-        <th>Giới tính</th>
-        <th>Năm sinh</th>
-        <th>SĐT</th>
-        <th>Địa chỉ</th>
-        <th>Giải phẫu bệnh</th>
-        <th>Chẩn đoán</th>
-        <th>TS Iod phóng xạ</th>
-        <th>Thuốc điều trị</th>
-        <th>FT4</th>
-        <th>TSH</th>
-        <th>Tg</th>
-        <th>AntiTg</th>
-        <th>Siêu âm</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Dữ liệu sẽ hiển thị ở đây khi bấm thêm -->
-    </tbody>
-  </table>
+  <!-- NỘI DUNG CHÍNH CỦA TRANG WEB -->
+  <div id="mainContent">
+    <h2>NHẬP THÔNG TIN KHÁM BỆNH</h2>
+
+    <div class="form-container">
+      <form id="medicalForm">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Ngày khám:</label>
+            <input type="date" id="ngayKham" required>
+          </div>
+          <div class="form-group">
+            <label>Họ và tên:</label>
+            <input type="text" id="hoTen" placeholder="Nguyễn Văn A" required>
+          </div>
+          <div class="form-group">
+            <label>Giới tính:</label>
+            <select id="gioiTinh">
+              <option value="Nam">Nam</option>
+              <option value="Nữ">Nữ</option>
+              <option value="Khác">Khác</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Năm sinh:</label>
+            <input type="number" id="namSinh" placeholder="1990">
+          </div>
+          <div class="form-group">
+            <label>Số điện thoại (*10 số):</label>
+            <input type="tel" id="sdt" placeholder="0987654321" maxlength="10">
+            <span id="sdtError" class="error-message">Số điện thoại phải đúng 10 chữ số!</span>
+          </div>
+          <div class="form-group">
+            <label>Địa chỉ:</label>
+            <input type="text" id="diaChi" placeholder="Hà Nội">
+          </div>
+          <div class="form-group">
+            <label>Giải phẫu bệnh:</label>
+            <input type="text" id="giaiPhauBenh">
+          </div>
+          <div class="form-group">
+            <label>Chẩn đoán:</label>
+            <input type="text" id="chanDoan">
+          </div>
+          <div class="form-group">
+            <label>Tiền sử điều trị Iod phóng xạ:</label>
+            <input type="text" id="iodPhongXa" placeholder="VD: Đã dùng 100mCi (2022)">
+          </div>
+          <div class="form-group">
+            <label>Thuốc điều trị:</label>
+            <input type="text" id="thuocDieuTri" placeholder="VD: Levothyroxine 100mcg">
+          </div>
+          <div class="form-group">
+            <label>FT4:</label>
+            <input type="text" id="ft4" placeholder="pmol/L">
+          </div>
+          <div class="form-group">
+            <label>TSH:</label>
+            <input type="text" id="tsh" placeholder="mIU/L">
+          </div>
+          <div class="form-group">
+            <label>Tg:</label>
+            <input type="text" id="tg" placeholder="ng/mL">
+          </div>
+          <div class="form-group">
+            <label>AntiTg:</label>
+            <input type="text" id="antiTg" placeholder="IU/mL">
+          </div>
+          <div class="form-group" style="grid-column: span 2;">
+            <label>Siêu âm:</label>
+            <textarea id="sieuAm" rows="2" placeholder="Kết quả siêu âm..."></textarea>
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button type="button" class="btn-add" onclick="addPatient()">Thêm vào danh sách</button>
+          <button type="button" class="btn-export" onclick="exportToExcel()">Xuất file Excel</button>
+        </div>
+      </form>
+    </div>
+
+    <h3>Danh sách bệnh nhân đã nhập</h3>
+    <table id="patientTable">
+      <thead>
+        <tr>
+          <th>STT</th>
+          <th>Ngày khám</th>
+          <th>Họ và tên</th>
+          <th>Giới tính</th>
+          <th>Năm sinh</th>
+          <th>SĐT</th>
+          <th>Địa chỉ</th>
+          <th>Giải phẫu bệnh</th>
+          <th>Chẩn đoán</th>
+          <th>TS Iod phóng xạ</th>
+          <th>Thuốc điều trị</th>
+          <th>FT4</th>
+          <th>TSH</th>
+          <th>Tg</th>
+          <th>AntiTg</th>
+          <th>Siêu âm</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
   <script>
-    // Mảng lưu trữ danh sách bệnh nhân
-    let patientList = [];
+    // BẠN ĐỔI MẬT KHẨU TRUY CẬP Ở ĐÂY (MẶC ĐỊNH LÀ: 123456)
+    const SECRET_PASSWORD = "123456";
 
-    // Tự động điền ngày khám hôm nay
+    function checkPassword() {
+      const input = document.getElementById('passInput').value;
+      if (input === SECRET_PASSWORD) {
+        document.getElementById('lockScreen').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'block';
+      } else {
+        alert('Mật khẩu không chính xác!');
+      }
+    }
+
+    // Cho phép bấm Enter để đăng nhập
+    document.getElementById('passInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') checkPassword();
+    });
+
+    let patientList = [];
     document.getElementById('ngayKham').valueAsDate = new Date();
 
+    document.getElementById('sdt').addEventListener('input', function() {
+      document.getElementById('sdtError').style.display = 'none';
+      this.classList.remove('input-error');
+    });
+
+    function validatePhone(sdt) {
+      return /^[0-9]{10}$/.test(sdt);
+    }
+
     function addPatient() {
-      const hoTen = document.getElementById('hoTen').value;
+      const hoTen = document.getElementById('hoTen').value.trim();
+      const sdt = document.getElementById('sdt').value.trim();
+
       if (!hoTen) {
         alert('Vui lòng nhập Họ và tên!');
         return;
       }
 
-      // Tạo đối tượng bệnh nhân
+      if (sdt !== '' && !validatePhone(sdt)) {
+        document.getElementById('sdt').classList.add('input-error');
+        document.getElementById('sdtError').style.display = 'block';
+        alert('Số điện thoại phải đúng 10 chữ số!');
+        return;
+      }
+
       const patient = {
         stt: patientList.length + 1,
         ngayKham: document.getElementById('ngayKham').value,
         hoTen: hoTen,
         gioiTinh: document.getElementById('gioiTinh').value,
         namSinh: document.getElementById('namSinh').value,
-        sdt: document.getElementById('sdt').value,
+        sdt: sdt,
         diaChi: document.getElementById('diaChi').value,
         giaiPhauBenh: document.getElementById('giaiPhauBenh').value,
         chanDoan: document.getElementById('chanDoan').value,
@@ -163,13 +223,9 @@
         sieuAm: document.getElementById('sieuAm').value
       };
 
-      // Thêm vào danh sách
       patientList.push(patient);
-
-      // Cập nhật bảng hiển thị
       renderTable();
 
-      // Reset form (giữ lại ngày khám)
       const currentDate = document.getElementById('ngayKham').value;
       document.getElementById('medicalForm').reset();
       document.getElementById('ngayKham').value = currentDate;
@@ -178,26 +234,13 @@
     function renderTable() {
       const tbody = document.querySelector('#patientTable tbody');
       tbody.innerHTML = '';
-
       patientList.forEach(p => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${p.stt}</td>
-          <td>${p.ngayKham}</td>
-          <td>${p.hoTen}</td>
-          <td>${p.gioiTinh}</td>
-          <td>${p.namSinh}</td>
-          <td>${p.sdt}</td>
-          <td>${p.diaChi}</td>
-          <td>${p.giaiPhauBenh}</td>
-          <td>${p.chanDoan}</td>
-          <td>${p.iodPhongXa}</td>
-          <td>${p.thuocDieuTri}</td>
-          <td>${p.ft4}</td>
-          <td>${p.tsh}</td>
-          <td>${p.tg}</td>
-          <td>${p.antiTg}</td>
-          <td>${p.sieuAm}</td>
+          <td>${p.stt}</td><td>${p.ngayKham}</td><td>${p.hoTen}</td><td>${p.gioiTinh}</td>
+          <td>${p.namSinh}</td><td>${p.sdt}</td><td>${p.diaChi}</td><td>${p.giaiPhauBenh}</td>
+          <td>${p.chanDoan}</td><td>${p.iodPhongXa}</td><td>${p.thuocDieuTri}</td><td>${p.ft4}</td>
+          <td>${p.tsh}</td><td>${p.tg}</td><td>${p.antiTg}</td><td>${p.sieuAm}</td>
         `;
         tbody.appendChild(tr);
       });
@@ -205,34 +248,15 @@
 
     function exportToExcel() {
       if (patientList.length === 0) {
-        alert('Chưa có dữ liệu để xuất! Vui lòng bấm "Thêm vào danh sách" trước.');
+        alert('Chưa có dữ liệu để xuất!');
         return;
       }
-
-      // 1. Tiêu đề các cột trong Excel
-      const headers = [
-        ["STT", "Ngày khám", "Họ và tên", "Giới tính", "Năm sinh", "SĐT", "Địa chỉ", 
-         "Giải phẫu bệnh", "Chẩn đoán", "Tiền sử điều trị Iod phóng xạ", 
-         "Thuốc điều trị", "FT4", "TSH", "Tg", "AntiTg", "Siêu âm"]
-      ];
-
-      // 2. Chuyển đổi mảng dữ liệu
-      const dataRows = patientList.map(p => [
-        p.stt, p.ngayKham, p.hoTen, p.gioiTinh, p.namSinh, p.sdt, p.diaChi,
-        p.giaiPhauBenh, p.chanDoan, p.iodPhongXa, p.thuocDieuTri,
-        p.ft4, p.tsh, p.tg, p.antiTg, p.sieuAm
-      ]);
-
-      const excelData = headers.concat(dataRows);
-
-      // 3. Tạo file Excel
-      const worksheet = XLSX.utils.aoa_to_sheet(excelData);
+      const headers = [["STT", "Ngày khám", "Họ và tên", "Giới tính", "Năm sinh", "SĐT", "Địa chỉ", "Giải phẫu bệnh", "Chẩn đoán", "TS Iod phóng xạ", "Thuốc điều trị", "FT4", "TSH", "Tg", "AntiTg", "Siêu âm"]];
+      const dataRows = patientList.map(p => [p.stt, p.ngayKham, p.hoTen, p.gioiTinh, p.namSinh, p.sdt, p.diaChi, p.giaiPhauBenh, p.chanDoan, p.iodPhongXa, p.thuocDieuTri, p.ft4, p.tsh, p.tg, p.antiTg, p.sieuAm]);
+      const worksheet = XLSX.utils.aoa_to_sheet(headers.concat(dataRows));
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "SoKhamBenh");
-
-      // 4. Tải file về máy
-      const filename = `Danh_Sach_Kham_Benh_${new Date().toISOString().slice(0,10)}.xlsx`;
-      XLSX.writeFile(workbook, filename);
+      XLSX.writeFile(workbook, `Danh_Sach_Kham_Benh_${new Date().toISOString().slice(0,10)}.xlsx`);
     }
   </script>
 </body>
