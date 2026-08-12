@@ -3,23 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <title>Quản lý Hồ sơ Khám bệnh & Xuất Excel</title>
+  <!-- Thư viện SheetJS xuất file Excel -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f7f6; }
     h2 { color: #0056b3; }
     
-    /* Giao diện khóa mật khẩu */
+    /* Giao diện màn hình khóa mật khẩu */
     #lockScreen {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: #f4f7f6; display: flex; justify-content: center; align-items: center; z-index: 9999;
     }
     .login-box {
-      background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); text-align: center; width: 300px;
+      background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); text-align: center; width: 320px;
     }
     .login-box input { width: 90%; padding: 10px; margin: 15px 0; border: 1px solid #ccc; border-radius: 4px; text-align: center; font-size: 16px; }
     .login-box button { width: 100%; padding: 10px; background-color: #0056b3; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
 
-    /* Giao diện chính (Ẩn mặc định) */
+    /* Nội dung chính (Ẩn khi chưa đăng nhập) */
     #mainContent { display: none; }
     
     .form-container { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
@@ -40,17 +41,17 @@
 </head>
 <body>
 
-  <!-- MÀN HÌNH NHẬP MẬT KHẨU -->
+  <!-- MÀN HÌNH NHẬP MẬT KHẨU BẢO VỆ -->
   <div id="lockScreen">
     <div class="login-box">
       <h3>XÁC NHẬN TRUY CẬP</h3>
-      <p style="font-size: 0.9em; color: #666;">Vui lòng nhập mật khẩu để dùng trang này</p>
+      <p style="font-size: 0.9em; color: #666;">Vui lòng nhập mật khẩu để sử dụng trang này</p>
       <input type="password" id="passInput" placeholder="Nhập mật khẩu...">
       <button onclick="checkPassword()">MỞ KHÓA</button>
     </div>
   </div>
 
-  <!-- NỘI DUNG CHÍNH CỦA TRANG WEB -->
+  <!-- NỘI DUNG FORM NHẬP BỆNH NHÂN -->
   <div id="mainContent">
     <h2>NHẬP THÔNG TIN KHÁM BỆNH</h2>
 
@@ -158,8 +159,8 @@
   </div>
 
   <script>
-    // BẠN ĐỔI MẬT KHẨU TRUY CẬP Ở ĐÂY (MẶC ĐỊNH LÀ: 123456)
-    const SECRET_PASSWORD = "123456";
+    // MẬT KHẨU TRUY CẬP ĐÃ ĐỢI THÀNH: nghihuuthichlam
+    const SECRET_PASSWORD = "nghihuuthichlam";
 
     function checkPassword() {
       const input = document.getElementById('passInput').value;
@@ -171,7 +172,7 @@
       }
     }
 
-    // Cho phép bấm Enter để đăng nhập
+    // Nhấn phím Enter để đăng nhập
     document.getElementById('passInput').addEventListener('keypress', function(e) {
       if (e.key === 'Enter') checkPassword();
     });
@@ -251,7 +252,7 @@
         alert('Chưa có dữ liệu để xuất!');
         return;
       }
-      const headers = [["STT", "Ngày khám", "Họ và tên", "Giới tính", "Năm sinh", "SĐT", "Địa chỉ", "Giải phẫu bệnh", "Chẩn đoán", "TS Iod phóng xạ", "Thuốc điều trị", "FT4", "TSH", "Tg", "AntiTg", "Siêu âm"]];
+      const headers = [["STT", "Ngày khám", "Họ và tên", "Giới tính", "Năm sinh", "SĐT", "Địa chỉ", "Giải phẫu bệnh", "Chẩn đoán", "Tiền sử điều trị Iod phóng xạ", "Thuốc điều trị", "FT4", "TSH", "Tg", "AntiTg", "Siêu âm"]];
       const dataRows = patientList.map(p => [p.stt, p.ngayKham, p.hoTen, p.gioiTinh, p.namSinh, p.sdt, p.diaChi, p.giaiPhauBenh, p.chanDoan, p.iodPhongXa, p.thuocDieuTri, p.ft4, p.tsh, p.tg, p.antiTg, p.sieuAm]);
       const worksheet = XLSX.utils.aoa_to_sheet(headers.concat(dataRows));
       const workbook = XLSX.utils.book_new();
