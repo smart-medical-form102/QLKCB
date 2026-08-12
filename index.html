@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Quản lý Hồ sơ Khám bệnh & Xuất Excel</title>
+  <!-- Thư viện SheetJS xuất file Excel -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f7f6; }
+    h2 { color: #0056b3; }
+    .form-container { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; }
+    .form-group { display: flex; flex-direction: column; }
+    .form-group label { font-weight: bold; margin-bottom: 5px; font-size: 0.9em; }
+    .form-group input, .form-group select, .form-group textarea { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9em; }
+    .btn-group { margin-top: 15px; display: flex; gap: 10px; }
+    button { padding: 10px 20px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; color: white; }
+    .btn-add { background-color: #28a745; }
+    .btn-export { background-color: #007bff; }
+    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 0.85em; }
+    th { background-color: #0056b3; color: white; }
+  </style>
+</head>
+<body>
+
+  <h2>NHẬP THÔNG TIN KHÁM BỆNH</h2>
+
+  <div class="form-container">
+    <form id="medicalForm">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Ngày khám:</label>
+          <input type="date" id="ngayKham" required>
+        </div>
+        <div class="form-group">
+          <label>Họ và tên:</label>
+          <input type="text" id="hoTen" placeholder="Nguyễn Văn A" required>
+        </div>
+        <div class="form-group">
+          <label>Giới tính:</label>
+          <select id="gioiTinh">
+            <option value="Nam">Nam</option>
+            <option value="Nữ">Nữ</option>
+            <option value="Khác">Khác</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Năm sinh:</label>
+          <input type="number" id="namSinh" placeholder="1990">
+        </div>
+        <div class="form-group">
+          <label>Số điện thoại:</label>
+          <input type="tel" id="sdt" placeholder="0987654321">
+        </div>
+        <div class="form-group">
+          <label>Địa chỉ:</label>
+          <input type="text" id="diaChi" placeholder="Hà Nội">
+        </div>
+        <div class="form-group">
+          <label>Giải phẫu bệnh:</label>
+          <input type="text" id="giaiPhauBenh">
+        </div>
+        <div class="form-group">
+          <label>Chẩn đoán:</label>
+          <input type="text" id="chanDoan">
+        </div>
+        <div class="form-group">
+          <label>Tiền sử điều trị Iod phóng xạ:</label>
+          <input type="text" id="iodPhongXa" placeholder="VD: Đã dùng 100mCi (2022)">
+        </div>
+        <div class="form-group">
+          <label>Thuốc điều trị:</label>
+          <input type="text" id="thuocDieuTri" placeholder="VD: Levothyroxine 100mcg">
+        </div>
+        <div class="form-group">
+          <label>FT4:</label>
+          <input type="text" id="ft4" placeholder="pmol/L">
+        </div>
+        <div class="form-group">
+          <label>TSH:</label>
+          <input type="text" id="tsh" placeholder="mIU/L">
+        </div>
+        <div class="form-group">
+          <label>Tg:</label>
+          <input type="text" id="tg" placeholder="ng/mL">
+        </div>
+        <div class="form-group">
+          <label>AntiTg:</label>
+          <input type="text" id="antiTg" placeholder="IU/mL">
+        </div>
+        <div class="form-group" style="grid-column: span 2;">
+          <label>Siêu âm:</label>
+          <textarea id="sieuAm" rows="2" placeholder="Kết quả siêu âm..."></textarea>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button type="button" class="btn-add" onclick="addPatient()">Thêm vào danh sách</button>
+        <button type="button" class="btn-export" onclick="exportToExcel()">Xuất file Excel</button>
+      </div>
+    </form>
+  </div>
+
+  <h3>Danh sách bệnh nhân đã nhập</h3>
+  <table id="patientTable">
+    <thead>
+      <tr>
+        <th>STT</th>
+        <th>Ngày khám</th>
+        <th>Họ và tên</th>
+        <th>Giới tính</th>
+        <th>Năm sinh</th>
+        <th>SĐT</th>
+        <th>Địa chỉ</th>
+        <th>Giải phẫu bệnh</th>
+        <th>Chẩn đoán</th>
+        <th>TS Iod phóng xạ</th>
+        <th>Thuốc điều trị</th>
+        <th>FT4</th>
+        <th>TSH</th>
+        <th>Tg</th>
+        <th>AntiTg</th>
+        <th>Siêu âm</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Dữ liệu sẽ hiển thị ở đây khi bấm thêm -->
+    </tbody>
+  </table>
+
+  <script>
+    // Mảng lưu trữ danh sách bệnh nhân
+    let patientList = [];
+
+    // Tự động điền ngày khám hôm nay
+    document.getElementById('ngayKham').valueAsDate = new Date();
+
+    function addPatient() {
+      const hoTen = document.getElementById('hoTen').value;
+      if (!hoTen) {
+        alert('Vui lòng nhập Họ và tên!');
+        return;
+      }
+
+      // Tạo đối tượng bệnh nhân
+      const patient = {
+        stt: patientList.length + 1,
+        ngayKham: document.getElementById('ngayKham').value,
+        hoTen: hoTen,
+        gioiTinh: document.getElementById('gioiTinh').value,
+        namSinh: document.getElementById('namSinh').value,
+        sdt: document.getElementById('sdt').value,
+        diaChi: document.getElementById('diaChi').value,
+        giaiPhauBenh: document.getElementById('giaiPhauBenh').value,
+        chanDoan: document.getElementById('chanDoan').value,
+        iodPhongXa: document.getElementById('iodPhongXa').value,
+        thuocDieuTri: document.getElementById('thuocDieuTri').value,
+        ft4: document.getElementById('ft4').value,
+        tsh: document.getElementById('tsh').value,
+        tg: document.getElementById('tg').value,
+        antiTg: document.getElementById('antiTg').value,
+        sieuAm: document.getElementById('sieuAm').value
+      };
+
+      // Thêm vào danh sách
+      patientList.push(patient);
+
+      // Cập nhật bảng hiển thị
+      renderTable();
+
+      // Reset form (giữ lại ngày khám)
+      const currentDate = document.getElementById('ngayKham').value;
+      document.getElementById('medicalForm').reset();
+      document.getElementById('ngayKham').value = currentDate;
+    }
+
+    function renderTable() {
+      const tbody = document.querySelector('#patientTable tbody');
+      tbody.innerHTML = '';
+
+      patientList.forEach(p => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${p.stt}</td>
+          <td>${p.ngayKham}</td>
+          <td>${p.hoTen}</td>
+          <td>${p.gioiTinh}</td>
+          <td>${p.namSinh}</td>
+          <td>${p.sdt}</td>
+          <td>${p.diaChi}</td>
+          <td>${p.giaiPhauBenh}</td>
+          <td>${p.chanDoan}</td>
+          <td>${p.iodPhongXa}</td>
+          <td>${p.thuocDieuTri}</td>
+          <td>${p.ft4}</td>
+          <td>${p.tsh}</td>
+          <td>${p.tg}</td>
+          <td>${p.antiTg}</td>
+          <td>${p.sieuAm}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function exportToExcel() {
+      if (patientList.length === 0) {
+        alert('Chưa có dữ liệu để xuất! Vui lòng bấm "Thêm vào danh sách" trước.');
+        return;
+      }
+
+      // 1. Tiêu đề các cột trong Excel
+      const headers = [
+        ["STT", "Ngày khám", "Họ và tên", "Giới tính", "Năm sinh", "SĐT", "Địa chỉ", 
+         "Giải phẫu bệnh", "Chẩn đoán", "Tiền sử điều trị Iod phóng xạ", 
+         "Thuốc điều trị", "FT4", "TSH", "Tg", "AntiTg", "Siêu âm"]
+      ];
+
+      // 2. Chuyển đổi mảng dữ liệu
+      const dataRows = patientList.map(p => [
+        p.stt, p.ngayKham, p.hoTen, p.gioiTinh, p.namSinh, p.sdt, p.diaChi,
+        p.giaiPhauBenh, p.chanDoan, p.iodPhongXa, p.thuocDieuTri,
+        p.ft4, p.tsh, p.tg, p.antiTg, p.sieuAm
+      ]);
+
+      const excelData = headers.concat(dataRows);
+
+      // 3. Tạo file Excel
+      const worksheet = XLSX.utils.aoa_to_sheet(excelData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "SoKhamBenh");
+
+      // 4. Tải file về máy
+      const filename = `Danh_Sach_Kham_Benh_${new Date().toISOString().slice(0,10)}.xlsx`;
+      XLSX.writeFile(workbook, filename);
+    }
+  </script>
+</body>
+</html>
