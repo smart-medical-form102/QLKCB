@@ -9,7 +9,7 @@
     body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f7f6; }
     h2 { color: #0056b3; }
     
-    /* Giao diện màn hình khóa mật khẩu */
+    /* Màn hình khóa mật khẩu */
     #lockScreen {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: #f4f7f6; display: flex; justify-content: center; align-items: center; z-index: 9999;
@@ -20,12 +20,9 @@
     .login-box input { width: 90%; padding: 10px; margin: 15px 0; border: 1px solid #ccc; border-radius: 4px; text-align: center; font-size: 16px; }
     .login-box button { width: 100%; padding: 10px; background-color: #0056b3; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
 
-    /* Nội dung chính (Ẩn khi chưa đăng nhập) */
     #mainContent { display: none; }
     
     .form-container { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
-    
-    /* Cấu hình lưới 4 cột */
     .form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
     
     @media (max-width: 900px) {
@@ -39,14 +36,14 @@
     .form-group label { font-weight: bold; margin-bottom: 5px; font-size: 0.9em; }
     .form-group input, .form-group select, .form-group textarea { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9em; }
     
-    /* Ép 4 ô xét nghiệm nằm gọn gàng trên 1 hàng ngang */
+    /* 4 ô xét nghiệm trên 1 hàng ngang */
     .test-row { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
     
     .btn-group { margin-top: 15px; display: flex; gap: 10px; }
     button { padding: 10px 20px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; color: white; }
     .btn-add { background-color: #28a745; }
-    .btn-update { background-color: #fd7e14; display: none; } /* Nút Cập nhật khi sửa */
-    .btn-cancel { background-color: #6c757d; display: none; } /* Nút Hủy sửa */
+    .btn-update { background-color: #fd7e14; display: none; }
+    .btn-cancel { background-color: #6c757d; display: none; }
     .btn-export { background-color: #007bff; }
     .btn-edit { background-color: #ffc107; color: #212529; padding: 5px 10px; font-size: 0.8em; font-weight: bold; margin-right: 4px; }
     .btn-delete { background-color: #dc3545; padding: 5px 10px; font-size: 0.8em; font-weight: normal; }
@@ -60,7 +57,7 @@
 </head>
 <body>
 
-  <!-- MÀN HÌNH NHẬP MẬT KHẨU BẢO VỆ -->
+  <!-- MÀN HÌNH MẬT KHẨU -->
   <div id="lockScreen">
     <div class="login-box">
       <h3>XÁC NHẬN TRUY CẬP</h3>
@@ -70,7 +67,7 @@
     </div>
   </div>
 
-  <!-- NỘI DUNG FORM NHẬP BỆNH NHÂN -->
+  <!-- NỘI DUNG FORM -->
   <div id="mainContent">
     <h2>NHẬP THÔNG TIN KHÁM BỆNH</h2>
 
@@ -118,17 +115,17 @@
             <input type="text" id="chanDoan">
           </div>
 
-          <!-- HÀNG 3: MỖI Ô CHIẾM 2 CỘT -->
-          <div class="form-group" style="grid-column: span 2;">
+          <!-- HÀNG 3: Ô IOD NHƯ CŨ (1 CỘT) & Ô THUỐC ĐIỀU TRỊ TO LÊN (3 CỘT) -->
+          <div class="form-group">
             <label>Tiền sử điều trị Iod phóng xạ:</label>
             <input type="text" id="iodPhongXa" placeholder="VD: Đã dùng 100mCi (2022)">
           </div>
-          <div class="form-group" style="grid-column: span 2;">
+          <div class="form-group" style="grid-column: span 3;">
             <label>Thuốc điều trị:</label>
             <input type="text" id="thuocDieuTri" placeholder="VD: Levothyroxine 100mcg">
           </div>
 
-          <!-- HÀNG 4: 4 Ô XÉT NGHIỆM TRÊN 1 HÀNG NGANG -->
+          <!-- HÀNG 4: 4 Ô XÉT NGHIỆM TRÊN 1 HÀNG -->
           <div class="test-row">
             <div class="form-group">
               <label>FT4:</label>
@@ -148,7 +145,7 @@
             </div>
           </div>
 
-          <!-- HÀNG 5: SIÊU ÂM TRẢI DÀI -->
+          <!-- HÀNG 5: SIÊU ÂM -->
           <div class="form-group" style="grid-column: 1 / -1;">
             <label>Siêu âm:</label>
             <textarea id="sieuAm" rows="2" placeholder="Kết quả siêu âm..."></textarea>
@@ -193,7 +190,7 @@
 
   <script>
     const SECRET_PASSWORD = "nghihuuthichlam";
-    let editingIndex = -1; // -1: Đang thêm mới, >= 0: Đang sửa dòng tương ứng
+    let editingIndex = -1;
 
     function checkPassword() {
       const input = document.getElementById('passInput').value;
@@ -261,7 +258,6 @@
       resetFormState();
     }
 
-    // Đưa thông tin từ bảng ngược lên Form để sửa
     function editPatient(index) {
       editingIndex = index;
       const p = patientList[index];
@@ -282,16 +278,13 @@
       document.getElementById('antiTg').value = p.antiTg;
       document.getElementById('sieuAm').value = p.sieuAm;
 
-      // Đổi trạng thái các nút bấm
       document.getElementById('btnAdd').style.display = 'none';
       document.getElementById('btnUpdate').style.display = 'inline-block';
       document.getElementById('btnCancel').style.display = 'inline-block';
       
-      // Tự động cuộn lên Form nhập
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // Lưu lại thông tin sau khi sửa xong
     function updatePatient() {
       if (editingIndex === -1) return;
 
@@ -310,7 +303,6 @@
         return;
       }
 
-      // Cập nhật lại phần tử tại vị trí đang sửa
       patientList[editingIndex] = {
         stt: patientList[editingIndex].stt,
         ngayKham: document.getElementById('ngayKham').value,
@@ -334,7 +326,6 @@
       resetFormState();
     }
 
-    // Xóa dòng bệnh nhân
     function deletePatient(index) {
       if (confirm('Bạn có chắc chắn muốn xóa bệnh nhân này khỏi danh sách?')) {
         patientList.splice(index, 1);
@@ -344,7 +335,6 @@
       }
     }
 
-    // Đưa form về trạng thái ban đầu
     function resetFormState() {
       editingIndex = -1;
       const currentDate = document.getElementById('ngayKham').value;
