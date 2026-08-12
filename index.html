@@ -24,14 +24,28 @@
     #mainContent { display: none; }
     
     .form-container { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; }
+    .form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+    
+    /* Đảm bảo khung co giãn linh hoạt trên màn hình nhỏ */
+    @media (max-width: 900px) {
+      .form-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 500px) {
+      .form-grid { grid-template-columns: 1fr; }
+    }
+
     .form-group { display: flex; flex-direction: column; }
     .form-group label { font-weight: bold; margin-bottom: 5px; font-size: 0.9em; }
     .form-group input, .form-group select, .form-group textarea { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9em; }
+    
+    /* Gom 4 ô xét nghiệm chung 1 hàng */
+    .full-row-4 { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+    
     .btn-group { margin-top: 15px; display: flex; gap: 10px; }
     button { padding: 10px 20px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; color: white; }
     .btn-add { background-color: #28a745; }
     .btn-export { background-color: #007bff; }
+    .btn-delete { background-color: #dc3545; padding: 5px 10px; font-size: 0.8em; font-weight: normal; }
     table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 0.85em; }
     th { background-color: #0056b3; color: white; }
@@ -95,31 +109,36 @@
             <label>Chẩn đoán:</label>
             <input type="text" id="chanDoan">
           </div>
-          <div class="form-group">
+          <div class="form-group" style="grid-column: span 2;">
             <label>Tiền sử điều trị Iod phóng xạ:</label>
             <input type="text" id="iodPhongXa" placeholder="VD: Đã dùng 100mCi (2022)">
           </div>
-          <div class="form-group">
+          <div class="form-group" style="grid-column: span 2;">
             <label>Thuốc điều trị:</label>
             <input type="text" id="thuocDieuTri" placeholder="VD: Levothyroxine 100mcg">
           </div>
-          <div class="form-group">
-            <label>FT4:</label>
-            <input type="text" id="ft4" placeholder="pmol/L">
+
+          <!-- 4 Ô XÉT NGHIỆM GOM THÀNH 1 HÀNG -->
+          <div class="full-row-4">
+            <div class="form-group">
+              <label>FT4:</label>
+              <input type="text" id="ft4" placeholder="pmol/L">
+            </div>
+            <div class="form-group">
+              <label>TSH:</label>
+              <input type="text" id="tsh" placeholder="mIU/L">
+            </div>
+            <div class="form-group">
+              <label>Tg:</label>
+              <input type="text" id="tg" placeholder="ng/mL">
+            </div>
+            <div class="form-group">
+              <label>AntiTg:</label>
+              <input type="text" id="antiTg" placeholder="IU/mL">
+            </div>
           </div>
-          <div class="form-group">
-            <label>TSH:</label>
-            <input type="text" id="tsh" placeholder="mIU/L">
-          </div>
-          <div class="form-group">
-            <label>Tg:</label>
-            <input type="text" id="tg" placeholder="ng/mL">
-          </div>
-          <div class="form-group">
-            <label>AntiTg:</label>
-            <input type="text" id="antiTg" placeholder="IU/mL">
-          </div>
-          <div class="form-group" style="grid-column: span 2;">
+
+          <div class="form-group" style="grid-column: 1 / -1;">
             <label>Siêu âm:</label>
             <textarea id="sieuAm" rows="2" placeholder="Kết quả siêu âm..."></textarea>
           </div>
@@ -152,6 +171,7 @@
           <th>Tg</th>
           <th>AntiTg</th>
           <th>Siêu âm</th>
+          <th>Thao tác</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -159,7 +179,6 @@
   </div>
 
   <script>
-    // MẬT KHẨU TRUY CẬP ĐÃ ĐỢI THÀNH: nghihuuthichlam
     const SECRET_PASSWORD = "nghihuuthichlam";
 
     function checkPassword() {
@@ -172,7 +191,6 @@
       }
     }
 
-    // Nhấn phím Enter để đăng nhập
     document.getElementById('passInput').addEventListener('keypress', function(e) {
       if (e.key === 'Enter') checkPassword();
     });
@@ -232,16 +250,25 @@
       document.getElementById('ngayKham').value = currentDate;
     }
 
+    function deletePatient(index) {
+      if (confirm('Bạn có chắc chắn muốn xóa bệnh nhân này khỏi danh sách?')) {
+        patientList.splice(index, 1);
+        patientList.forEach((p, i) => p.stt = i + 1);
+        renderTable();
+      }
+    }
+
     function renderTable() {
       const tbody = document.querySelector('#patientTable tbody');
       tbody.innerHTML = '';
-      patientList.forEach(p => {
+      patientList.forEach((p, index) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${p.stt}</td><td>${p.ngayKham}</td><td>${p.hoTen}</td><td>${p.gioiTinh}</td>
           <td>${p.namSinh}</td><td>${p.sdt}</td><td>${p.diaChi}</td><td>${p.giaiPhauBenh}</td>
           <td>${p.chanDoan}</td><td>${p.iodPhongXa}</td><td>${p.thuocDieuTri}</td><td>${p.ft4}</td>
           <td>${p.tsh}</td><td>${p.tg}</td><td>${p.antiTg}</td><td>${p.sieuAm}</td>
+          <td><button type="button" class="btn-delete" onclick="deletePatient(${index})">Xóa</button></td>
         `;
         tbody.appendChild(tr);
       });
