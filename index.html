@@ -24,9 +24,10 @@
     #mainContent { display: none; }
     
     .form-container { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    
+    /* Cấu hình lưới 4 cột */
     .form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
     
-    /* Đảm bảo khung co giãn linh hoạt trên màn hình nhỏ */
     @media (max-width: 900px) {
       .form-grid { grid-template-columns: repeat(2, 1fr); }
     }
@@ -38,14 +39,18 @@
     .form-group label { font-weight: bold; margin-bottom: 5px; font-size: 0.9em; }
     .form-group input, .form-group select, .form-group textarea { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9em; }
     
-    /* Gom 4 ô xét nghiệm chung 1 hàng */
-    .full-row-4 { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+    /* Ép 4 ô xét nghiệm nằm gọn gàng trên 1 hàng ngang */
+    .test-row { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
     
     .btn-group { margin-top: 15px; display: flex; gap: 10px; }
     button { padding: 10px 20px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; color: white; }
     .btn-add { background-color: #28a745; }
+    .btn-update { background-color: #fd7e14; display: none; } /* Nút Cập nhật khi sửa */
+    .btn-cancel { background-color: #6c757d; display: none; } /* Nút Hủy sửa */
     .btn-export { background-color: #007bff; }
+    .btn-edit { background-color: #ffc107; color: #212529; padding: 5px 10px; font-size: 0.8em; font-weight: bold; margin-right: 4px; }
     .btn-delete { background-color: #dc3545; padding: 5px 10px; font-size: 0.8em; font-weight: normal; }
+    
     table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 0.85em; }
     th { background-color: #0056b3; color: white; }
@@ -72,6 +77,7 @@
     <div class="form-container">
       <form id="medicalForm">
         <div class="form-grid">
+          <!-- HÀNG 1 -->
           <div class="form-group">
             <label>Ngày khám:</label>
             <input type="date" id="ngayKham" required>
@@ -92,6 +98,8 @@
             <label>Năm sinh:</label>
             <input type="number" id="namSinh" placeholder="1990">
           </div>
+
+          <!-- HÀNG 2 -->
           <div class="form-group">
             <label>Số điện thoại (*10 số):</label>
             <input type="tel" id="sdt" placeholder="0987654321" maxlength="10">
@@ -109,6 +117,8 @@
             <label>Chẩn đoán:</label>
             <input type="text" id="chanDoan">
           </div>
+
+          <!-- HÀNG 3: MỖI Ô CHIẾM 2 CỘT -->
           <div class="form-group" style="grid-column: span 2;">
             <label>Tiền sử điều trị Iod phóng xạ:</label>
             <input type="text" id="iodPhongXa" placeholder="VD: Đã dùng 100mCi (2022)">
@@ -118,8 +128,8 @@
             <input type="text" id="thuocDieuTri" placeholder="VD: Levothyroxine 100mcg">
           </div>
 
-          <!-- 4 Ô XÉT NGHIỆM GOM THÀNH 1 HÀNG -->
-          <div class="full-row-4">
+          <!-- HÀNG 4: 4 Ô XÉT NGHIỆM TRÊN 1 HÀNG NGANG -->
+          <div class="test-row">
             <div class="form-group">
               <label>FT4:</label>
               <input type="text" id="ft4" placeholder="pmol/L">
@@ -138,6 +148,7 @@
             </div>
           </div>
 
+          <!-- HÀNG 5: SIÊU ÂM TRẢI DÀI -->
           <div class="form-group" style="grid-column: 1 / -1;">
             <label>Siêu âm:</label>
             <textarea id="sieuAm" rows="2" placeholder="Kết quả siêu âm..."></textarea>
@@ -145,7 +156,9 @@
         </div>
 
         <div class="btn-group">
-          <button type="button" class="btn-add" onclick="addPatient()">Thêm vào danh sách</button>
+          <button type="button" id="btnAdd" class="btn-add" onclick="addPatient()">Thêm vào danh sách</button>
+          <button type="button" id="btnUpdate" class="btn-update" onclick="updatePatient()">Cập nhật thông tin</button>
+          <button type="button" id="btnCancel" class="btn-cancel" onclick="resetFormState()">Hủy sửa</button>
           <button type="button" class="btn-export" onclick="exportToExcel()">Xuất file Excel</button>
         </div>
       </form>
@@ -171,7 +184,7 @@
           <th>Tg</th>
           <th>AntiTg</th>
           <th>Siêu âm</th>
-          <th>Thao tác</th>
+          <th style="width: 110px;">Thao tác</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -180,6 +193,7 @@
 
   <script>
     const SECRET_PASSWORD = "nghihuuthichlam";
+    let editingIndex = -1; // -1: Đang thêm mới, >= 0: Đang sửa dòng tương ứng
 
     function checkPassword() {
       const input = document.getElementById('passInput').value;
@@ -244,18 +258,102 @@
 
       patientList.push(patient);
       renderTable();
-
-      const currentDate = document.getElementById('ngayKham').value;
-      document.getElementById('medicalForm').reset();
-      document.getElementById('ngayKham').value = currentDate;
+      resetFormState();
     }
 
+    // Đưa thông tin từ bảng ngược lên Form để sửa
+    function editPatient(index) {
+      editingIndex = index;
+      const p = patientList[index];
+
+      document.getElementById('ngayKham').value = p.ngayKham;
+      document.getElementById('hoTen').value = p.hoTen;
+      document.getElementById('gioiTinh').value = p.gioiTinh;
+      document.getElementById('namSinh').value = p.namSinh;
+      document.getElementById('sdt').value = p.sdt;
+      document.getElementById('diaChi').value = p.diaChi;
+      document.getElementById('giaiPhauBenh').value = p.giaiPhauBenh;
+      document.getElementById('chanDoan').value = p.chanDoan;
+      document.getElementById('iodPhongXa').value = p.iodPhongXa;
+      document.getElementById('thuocDieuTri').value = p.thuocDieuTri;
+      document.getElementById('ft4').value = p.ft4;
+      document.getElementById('tsh').value = p.tsh;
+      document.getElementById('tg').value = p.tg;
+      document.getElementById('antiTg').value = p.antiTg;
+      document.getElementById('sieuAm').value = p.sieuAm;
+
+      // Đổi trạng thái các nút bấm
+      document.getElementById('btnAdd').style.display = 'none';
+      document.getElementById('btnUpdate').style.display = 'inline-block';
+      document.getElementById('btnCancel').style.display = 'inline-block';
+      
+      // Tự động cuộn lên Form nhập
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Lưu lại thông tin sau khi sửa xong
+    function updatePatient() {
+      if (editingIndex === -1) return;
+
+      const hoTen = document.getElementById('hoTen').value.trim();
+      const sdt = document.getElementById('sdt').value.trim();
+
+      if (!hoTen) {
+        alert('Vui lòng nhập Họ và tên!');
+        return;
+      }
+
+      if (sdt !== '' && !validatePhone(sdt)) {
+        document.getElementById('sdt').classList.add('input-error');
+        document.getElementById('sdtError').style.display = 'block';
+        alert('Số điện thoại phải đúng 10 chữ số!');
+        return;
+      }
+
+      // Cập nhật lại phần tử tại vị trí đang sửa
+      patientList[editingIndex] = {
+        stt: patientList[editingIndex].stt,
+        ngayKham: document.getElementById('ngayKham').value,
+        hoTen: hoTen,
+        gioiTinh: document.getElementById('gioiTinh').value,
+        namSinh: document.getElementById('namSinh').value,
+        sdt: sdt,
+        diaChi: document.getElementById('diaChi').value,
+        giaiPhauBenh: document.getElementById('giaiPhauBenh').value,
+        chanDoan: document.getElementById('chanDoan').value,
+        iodPhongXa: document.getElementById('iodPhongXa').value,
+        thuocDieuTri: document.getElementById('thuocDieuTri').value,
+        ft4: document.getElementById('ft4').value,
+        tsh: document.getElementById('tsh').value,
+        tg: document.getElementById('tg').value,
+        antiTg: document.getElementById('antiTg').value,
+        sieuAm: document.getElementById('sieuAm').value
+      };
+
+      renderTable();
+      resetFormState();
+    }
+
+    // Xóa dòng bệnh nhân
     function deletePatient(index) {
       if (confirm('Bạn có chắc chắn muốn xóa bệnh nhân này khỏi danh sách?')) {
         patientList.splice(index, 1);
         patientList.forEach((p, i) => p.stt = i + 1);
         renderTable();
+        if (editingIndex === index) resetFormState();
       }
+    }
+
+    // Đưa form về trạng thái ban đầu
+    function resetFormState() {
+      editingIndex = -1;
+      const currentDate = document.getElementById('ngayKham').value;
+      document.getElementById('medicalForm').reset();
+      document.getElementById('ngayKham').value = currentDate;
+
+      document.getElementById('btnAdd').style.display = 'inline-block';
+      document.getElementById('btnUpdate').style.display = 'none';
+      document.getElementById('btnCancel').style.display = 'none';
     }
 
     function renderTable() {
@@ -268,7 +366,10 @@
           <td>${p.namSinh}</td><td>${p.sdt}</td><td>${p.diaChi}</td><td>${p.giaiPhauBenh}</td>
           <td>${p.chanDoan}</td><td>${p.iodPhongXa}</td><td>${p.thuocDieuTri}</td><td>${p.ft4}</td>
           <td>${p.tsh}</td><td>${p.tg}</td><td>${p.antiTg}</td><td>${p.sieuAm}</td>
-          <td><button type="button" class="btn-delete" onclick="deletePatient(${index})">Xóa</button></td>
+          <td>
+            <button type="button" class="btn-edit" onclick="editPatient(${index})">Sửa</button>
+            <button type="button" class="btn-delete" onclick="deletePatient(${index})">Xóa</button>
+          </td>
         `;
         tbody.appendChild(tr);
       });
