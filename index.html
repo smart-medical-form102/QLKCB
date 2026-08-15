@@ -90,7 +90,7 @@
     }
     table { 
       width: 100%; 
-      min-width: 1700px; /* Đảm bảo các cột rộng rãi, dễ đọc và cuộn ngang */
+      min-width: 1700px; 
       border-collapse: collapse; 
     }
     th, td { 
@@ -99,7 +99,7 @@
       text-align: left; 
       font-size: 0.85em; 
       vertical-align: top;
-      white-space: pre-wrap; /* Giữ dòng chữ hiển thị rõ ràng */
+      white-space: pre-wrap; 
       word-break: break-word;
     }
     th { background-color: #0056b3; color: white; position: sticky; top: 0; }
@@ -258,6 +258,7 @@
   </div>
 
   <script>
+    // MẬT KHẨU MỚI: nghihuumelam
     const SECRET_PASSWORD = "nghihuumelam";
     let editingIndex = -1;
 
@@ -275,7 +276,7 @@
       if (e.key === 'Enter') checkPassword();
     });
 
-    // Lắng nghe phím tắt Ctrl + F hoặc Cmd + F để focus vào ô tìm kiếm danh sách
+    // Phím tắt Ctrl + F / Cmd + F để focus tìm kiếm
     document.addEventListener('keydown', function(e) {
       if ((e.ctrlKey || e.metaKey) && (e.key === 'f' || e.key === 'F')) {
         const searchInput = document.getElementById('searchInput');
@@ -436,7 +437,6 @@
       tbody.innerHTML = '';
 
       patientList.forEach((p, index) => {
-        // Tìm kiếm trên tất cả thông tin bệnh nhân
         const rowText = Object.values(p).join(' ').toLowerCase();
         if (rowText.includes(keyword)) {
           const tr = document.createElement('tr');
@@ -456,7 +456,7 @@
     }
 
     function renderTable() {
-      filterTable(); // Tự động cập nhật lại giao diện bảng theo từ khóa tìm kiếm
+      filterTable();
     }
 
     function exportToExcel() {
