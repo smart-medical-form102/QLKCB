@@ -44,6 +44,14 @@
       font-family: inherit;
     }
     
+    /* Thanh chọn nhanh bên trên textarea */
+    .quick-select {
+      margin-bottom: 5px;
+      font-size: 0.85em;
+      border-color: #0056b3;
+      background-color: #f8f9fa;
+    }
+
     /* 4 ô xét nghiệm trên 1 hàng */
     .test-row { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
     
@@ -56,7 +64,7 @@
     .btn-edit { background-color: #ffc107; color: #212529; padding: 5px 10px; font-size: 0.8em; font-weight: bold; margin-right: 4px; }
     .btn-delete { background-color: #dc3545; padding: 5px 10px; font-size: 0.8em; font-weight: normal; }
 
-    /* Thanh tìm kiếm danh sách */
+    /* Thanh tìm kiếm */
     .table-header-bar {
       display: flex;
       justify-content: space-between;
@@ -79,7 +87,7 @@
       width: 260px;
     }
 
-    /* Khung cuộn ngang cho bảng danh sách */
+    /* Bảng cuộn ngang */
     .table-responsive {
       width: 100%;
       overflow-x: auto;
@@ -159,13 +167,29 @@
             <label>Địa chỉ:</label>
             <input type="text" id="diaChi" placeholder="Hà Nội">
           </div>
+
+          <!-- Ô GIẢI PHẪU BỆNH: Có danh sách gợi ý và cho phép nhập tự do -->
           <div class="form-group">
             <label>Giải phẫu bệnh:</label>
-            <input type="text" id="giaiPhauBenh">
+            <input type="text" id="giaiPhauBenh" list="giaiPhauBenhList" placeholder="Chọn hoặc nhập tiếp...">
+            <datalist id="giaiPhauBenhList">
+              <option value="K giáp thể nhú">
+              <option value="K giáp thể nang">
+            </datalist>
           </div>
+
+          <!-- Ô CHẨN ĐOÁN: Chọn nhanh + gõ bệnh kèm, tự động xuống dòng -->
           <div class="form-group">
             <label>Chẩn đoán:</label>
-            <input type="text" id="chanDoan">
+            <select class="quick-select" onchange="appendValue('chanDoan', this)">
+              <option value="">-- Chọn nhanh để thêm --</option>
+              <option value="K giáp đã PT">K giáp đã PT</option>
+              <option value="Basedow">Basedow</option>
+              <option value="Cường giáp">Cường giáp</option>
+              <option value="Suy giáp">Suy giáp</option>
+              <option value="Viêm tuyến giáp">Viêm tuyến giáp</option>
+            </select>
+            <textarea id="chanDoan" rows="2" placeholder="Chọn ở trên hoặc nhập bệnh kèm..."></textarea>
           </div>
 
           <!-- HÀNG 3: IOD (1 CỘT) & THUỐC ĐIỀU TRỊ (3 CỘT) -->
@@ -173,9 +197,23 @@
             <label>Tiền sử điều trị Iod phóng xạ:</label>
             <input type="text" id="iodPhongXa" placeholder="VD: Đã dùng 100mCi (2022)">
           </div>
+
+          <!-- Ô THUỐC ĐIỀU TRỊ: Chọn nhanh nhiều loại + tự động xuống dòng + bổ sung liều lượng -->
           <div class="form-group" style="grid-column: span 3;">
             <label>Thuốc điều trị:</label>
-            <input type="text" id="thuocDieuTri" placeholder="VD: Levothyroxine 100mcg">
+            <select class="quick-select" onchange="appendValue('thuocDieuTri', this)">
+              <option value="">-- Chọn thuốc để thêm vào đơn --</option>
+              <option value="Levothyroxine 100mg">Levothyroxine 100mg</option>
+              <option value="Zedcal">Zedcal</option>
+              <option value="D3K2">D3K2</option>
+              <option value="Amesia">Amesia</option>
+              <option value="Seazimin (Omega3)">Seazimin (Omega3)</option>
+              <option value="B-coenzym">B-coenzym</option>
+              <option value="Greenpam">Greenpam</option>
+              <option value="Atiferole">Atiferole</option>
+              <option value="Anbaliv">Anbaliv</option>
+            </select>
+            <textarea id="thuocDieuTri" rows="2" placeholder="Chọn thuốc ở trên hoặc nhập/bổ sung thêm nội dung..."></textarea>
           </div>
 
           <!-- HÀNG 4: 4 Ô XÉT NGHIỆM TRÊN 1 HÀNG -->
@@ -239,10 +277,10 @@
             <th style="width: 75px;">Năm sinh</th>
             <th style="width: 100px;">SĐT</th>
             <th style="width: 130px;">Địa chỉ</th>
-            <th style="width: 120px;">Giải phẫu bệnh</th>
-            <th style="width: 130px;">Chẩn đoán</th>
+            <th style="width: 130px;">Giải phẫu bệnh</th>
+            <th style="width: 160px;">Chẩn đoán</th>
             <th style="width: 150px;">TS Iod phóng xạ</th>
-            <th style="width: 180px;">Thuốc điều trị</th>
+            <th style="width: 200px;">Thuốc điều trị</th>
             <th style="width: 80px;">FT4</th>
             <th style="width: 80px;">TSH</th>
             <th style="width: 80px;">Tg</th>
@@ -258,7 +296,6 @@
   </div>
 
   <script>
-    // MẬT KHẨU MỚI: nghihuumelam
     const SECRET_PASSWORD = "nghihuumelam";
     let editingIndex = -1;
 
@@ -276,7 +313,21 @@
       if (e.key === 'Enter') checkPassword();
     });
 
-    // Phím tắt Ctrl + F / Cmd + F để focus tìm kiếm
+    // Hàm chọn giá trị nối thêm vào textarea và tự động xuống dòng
+    function appendValue(targetId, selectElement) {
+      const selectedVal = selectElement.value;
+      if (!selectedVal) return;
+      const targetArea = document.getElementById(targetId);
+      if (targetArea.value.trim() === '') {
+        targetArea.value = selectedVal;
+      } else {
+        targetArea.value += '\n' + selectedVal; // Tự động xuống dòng khi có từ 2 mục trở lên
+      }
+      selectElement.value = ''; // Reset lại ô chọn
+      targetArea.focus();
+    }
+
+    // Phím tắt Ctrl + F / Cmd + F
     document.addEventListener('keydown', function(e) {
       if ((e.ctrlKey || e.metaKey) && (e.key === 'f' || e.key === 'F')) {
         const searchInput = document.getElementById('searchInput');
