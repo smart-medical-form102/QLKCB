@@ -44,7 +44,6 @@
       font-family: inherit;
     }
     
-    /* Thanh chọn nhanh bên trên textarea */
     .quick-select {
       margin-bottom: 5px;
       font-size: 0.85em;
@@ -61,8 +60,16 @@
     .btn-update { background-color: #fd7e14; display: none; }
     .btn-cancel { background-color: #6c757d; display: none; }
     .btn-export { background-color: #007bff; }
+    .btn-sync { background-color: #17a2b8; }
     .btn-edit { background-color: #ffc107; color: #212529; padding: 5px 10px; font-size: 0.8em; font-weight: bold; margin-right: 4px; }
     .btn-delete { background-color: #dc3545; padding: 5px 10px; font-size: 0.8em; font-weight: normal; }
+
+    #loadingNotice {
+      display: none;
+      font-weight: bold;
+      color: #0056b3;
+      margin-left: 10px;
+    }
 
     /* Thanh tìm kiếm */
     .table-header-bar {
@@ -168,7 +175,7 @@
             <input type="text" id="diaChi" placeholder="Hà Nội">
           </div>
 
-          <!-- Ô GIẢI PHẪU BỆNH: Có danh sách gợi ý và cho phép nhập tự do -->
+          <!-- Ô GIẢI PHẪU BỆNH -->
           <div class="form-group">
             <label>Giải phẫu bệnh:</label>
             <input type="text" id="giaiPhauBenh" list="giaiPhauBenhList" placeholder="Chọn hoặc nhập tiếp...">
@@ -178,7 +185,7 @@
             </datalist>
           </div>
 
-          <!-- Ô CHẨN ĐOÁN: Chọn nhanh + gõ bệnh kèm, tự động xuống dòng -->
+          <!-- Ô CHẨN ĐOÁN -->
           <div class="form-group">
             <label>Chẩn đoán:</label>
             <select class="quick-select" onchange="appendValue('chanDoan', this)">
@@ -198,7 +205,7 @@
             <input type="text" id="iodPhongXa" placeholder="VD: Đã dùng 100mCi (2022)">
           </div>
 
-          <!-- Ô THUỐC ĐIỀU TRỊ: Chọn nhanh nhiều loại + tự động xuống dòng + bổ sung liều lượng -->
+          <!-- Ô THUỐC ĐIỀU TRỊ -->
           <div class="form-group" style="grid-column: span 3;">
             <label>Thuốc điều trị:</label>
             <select class="quick-select" onchange="appendValue('thuocDieuTri', this)">
@@ -236,7 +243,7 @@
             </div>
           </div>
 
-          <!-- HÀNG 5: SIÊU ÂM (2 CỘT) VÀ KHÁC (2 CỘT) -->
+          <!-- HÀNG 5: SIÊU ÂM VÀ KHÁC -->
           <div class="form-group" style="grid-column: span 2;">
             <label>Siêu âm:</label>
             <textarea id="sieuAm" rows="2" placeholder="Kết quả siêu âm..."></textarea>
@@ -252,6 +259,8 @@
           <button type="button" id="btnUpdate" class="btn-update" onclick="updatePatient()">Cập nhật thông tin</button>
           <button type="button" id="btnCancel" class="btn-cancel" onclick="resetFormState()">Hủy sửa</button>
           <button type="button" class="btn-export" onclick="exportToExcel()">Xuất file Excel</button>
+          <button type="button" class="btn-sync" onclick="loadDataFromSheets()">Tải lại dữ liệu (F5)</button>
+          <span id="loadingNotice">⏳ Đang xử lý...</span>
         </div>
       </form>
     </div>
@@ -297,13 +306,19 @@
 
   <script>
     const SECRET_PASSWORD = "nghihuumelam";
+    
+    // Đường link Google Apps Script đã tích hợp
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwk06j1_EJtjJzbNZhNRDrtJIF6fGa22ZUY1bsW73tgMmD9gqJbBd8kyPkKYzwMoUMvjA/exec";
+
     let editingIndex = -1;
+    let patientList = [];
 
     function checkPassword() {
       const input = document.getElementById('passInput').value;
       if (input === SECRET_PASSWORD) {
         document.getElementById('lockScreen').style.display = 'none';
         document.getElementById('mainContent').style.display = 'block';
+        loadDataFromSheets();
       } else {
         alert('Mật khẩu không chính xác!');
       }
@@ -313,7 +328,37 @@
       if (e.key === 'Enter') checkPassword();
     });
 
-    // Hàm chọn giá trị nối thêm vào textarea và tự động xuống dòng
+    function showLoading(text) {
+      const notice = document.getElementById('loadingNotice');
+      notice.innerText = text;
+      notice.style.display = 'inline-block';
+    }
+
+    function hideLoading() {
+      document.getElementById('loadingNotice').style.display = 'none';
+    }
+
+    async function loadDataFromSheets() {
+      if (!SCRIPT_URL) return;
+      showLoading("⏳ Đang tải dữ liệu từ Google Sheets...");
+      try {
+        const response = await fetch(SCRIPT_URL);
+        const res = await response.json();
+        if (res.status === "success") {
+          patientList = res.data.map((p, i) => ({
+            ...p,
+            stt: i + 1,
+            sdt: (p.sdt ? String(p.sdt).replace("'", "") : "")
+          }));
+          renderTable();
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        hideLoading();
+      }
+    }
+
     function appendValue(targetId, selectElement) {
       const selectedVal = selectElement.value;
       if (!selectedVal) return;
@@ -321,13 +366,12 @@
       if (targetArea.value.trim() === '') {
         targetArea.value = selectedVal;
       } else {
-        targetArea.value += '\n' + selectedVal; // Tự động xuống dòng khi có từ 2 mục trở lên
+        targetArea.value += '\n' + selectedVal;
       }
-      selectElement.value = ''; // Reset lại ô chọn
+      selectElement.value = '';
       targetArea.focus();
     }
 
-    // Phím tắt Ctrl + F / Cmd + F
     document.addEventListener('keydown', function(e) {
       if ((e.ctrlKey || e.metaKey) && (e.key === 'f' || e.key === 'F')) {
         const searchInput = document.getElementById('searchInput');
@@ -339,7 +383,6 @@
       }
     });
 
-    let patientList = [];
     document.getElementById('ngayKham').valueAsDate = new Date();
 
     document.getElementById('sdt').addEventListener('input', function() {
@@ -351,7 +394,7 @@
       return /^[0-9]{10}$/.test(sdt);
     }
 
-    function addPatient() {
+    async function addPatient() {
       const hoTen = document.getElementById('hoTen').value.trim();
       const sdt = document.getElementById('sdt').value.trim();
 
@@ -390,6 +433,22 @@
       patientList.push(patient);
       renderTable();
       resetFormState();
+
+      if (SCRIPT_URL) {
+        showLoading("⏳ Đang lưu vào Google Sheets...");
+        try {
+          await fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: "ADD", data: patient })
+          });
+        } catch (e) {
+          console.error(e);
+        } finally {
+          hideLoading();
+        }
+      }
     }
 
     function editPatient(index) {
@@ -420,7 +479,7 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function updatePatient() {
+    async function updatePatient() {
       if (editingIndex === -1) return;
 
       const hoTen = document.getElementById('hoTen').value.trim();
@@ -438,7 +497,7 @@
         return;
       }
 
-      patientList[editingIndex] = {
+      const updated = {
         stt: patientList[editingIndex].stt,
         ngayKham: document.getElementById('ngayKham').value,
         hoTen: hoTen,
@@ -458,16 +517,50 @@
         khac: document.getElementById('khac').value
       };
 
+      const targetIdx = editingIndex;
+      patientList[targetIdx] = updated;
       renderTable();
       resetFormState();
+
+      if (SCRIPT_URL) {
+        showLoading("⏳ Đang cập nhật lên Google Sheets...");
+        try {
+          await fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: "UPDATE", index: targetIdx, data: updated })
+          });
+        } catch (e) {
+          console.error(e);
+        } finally {
+          hideLoading();
+        }
+      }
     }
 
-    function deletePatient(index) {
+    async function deletePatient(index) {
       if (confirm('Bạn có chắc chắn muốn xóa bệnh nhân này khỏi danh sách?')) {
         patientList.splice(index, 1);
         patientList.forEach((p, i) => p.stt = i + 1);
         renderTable();
         if (editingIndex === index) resetFormState();
+
+        if (SCRIPT_URL) {
+          showLoading("⏳ Đang xóa trên Google Sheets...");
+          try {
+            await fetch(SCRIPT_URL, {
+              method: 'POST',
+              mode: 'no-cors',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({ action: "DELETE", index: index })
+            });
+          } catch (e) {
+            console.error(e);
+          } finally {
+            hideLoading();
+          }
+        }
       }
     }
 
