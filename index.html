@@ -571,7 +571,7 @@
           </div>
         </div>
 
-        <!-- MULTI-SELECT DROPDOWN THUỐC ĐIỀU TRỊ (ĐÃ BỔ SUNG THYROZOL 5MG & PTU 100 MG) -->
+        <!-- MULTI-SELECT DROPDOWN THUỐC ĐIỀU TRỊ (ĐÃ CẬP NHẬT PTU 100mg VIẾT LIỀN) -->
         <div class="card">
           <div class="card-header"><span class="header-icon">💊</span><span>Thuốc điều trị</span></div>
           <div class="form-group">
@@ -583,7 +583,7 @@
               </div>
               <div class="ms-menu" id="menuThuoc">
                 <label class="ms-item"><input type="checkbox" data-val="Thyrozol 5mg" onchange="syncFromDropdown('menuThuoc', 'mThuocDieuTri', 'labelThuoc')"> <span>Thyrozol 5mg</span></label>
-                <label class="ms-item"><input type="checkbox" data-val="PTU 100 mg" onchange="syncFromDropdown('menuThuoc', 'mThuocDieuTri', 'labelThuoc')"> <span>PTU 100 mg</span></label>
+                <label class="ms-item"><input type="checkbox" data-val="PTU 100mg" onchange="syncFromDropdown('menuThuoc', 'mThuocDieuTri', 'labelThuoc')"> <span>PTU 100mg</span></label>
                 <label class="ms-item"><input type="checkbox" data-val="Levothyroxine 100mcg" onchange="syncFromDropdown('menuThuoc', 'mThuocDieuTri', 'labelThuoc')"> <span>Levothyroxine 100mcg</span></label>
                 <label class="ms-item"><input type="checkbox" data-val="Zedcal" onchange="syncFromDropdown('menuThuoc', 'mThuocDieuTri', 'labelThuoc')"> <span>Zedcal</span></label>
                 <label class="ms-item"><input type="checkbox" data-val="D3K2" onchange="syncFromDropdown('menuThuoc', 'mThuocDieuTri', 'labelThuoc')"> <span>D3K2</span></label>
@@ -703,12 +703,12 @@
     </div>
   </div>
 
-  <!-- MODAL NHẬP MẬT KHẨU KHI TẢI / ĐỒNG BỘ TỪ SHEETS -->
+  <!-- MODAL NHẬP MẬT KHẨU KHI TẢI / ĐỒNG BỘ TỪ SHEETS (ĐÃ XÓA CHỮ MẶC ĐỊNH ĐỂ BẢO MẬT) -->
   <div id="syncPromptModal">
     <div class="popup-box">
       <div style="font-size:28px; margin-bottom:6px;">🔐</div>
       <h3 style="margin:0 0 6px 0; color: var(--text);">Xác thực đồng bộ</h3>
-      <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:14px;">Nhập mật khẩu (mặc định 211069) để tải hồ sơ từ Google Sheet xuống App</p>
+      <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:14px;">Nhập mật khẩu để tải hồ sơ từ Google Sheet xuống App</p>
       
       <div class="form-group">
         <input type="password" id="syncPinInput" maxlength="6" inputmode="numeric" placeholder="Nhập PIN 6 số" style="text-align:center; font-size:18px; letter-spacing:3px;">
@@ -764,7 +764,6 @@
       }
     });
 
-    /* LẤY CHÍNH XÁC TÊN MỤC DÙ DÙNG TRÊN BẤT KỲ TRÌNH DUYỆT NÀO */
     function getItemText(cb) {
       return (cb.getAttribute('data-val') || cb.value || cb.parentElement.textContent).trim();
     }
