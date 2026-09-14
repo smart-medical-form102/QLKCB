@@ -195,6 +195,7 @@
     }
     .pi-name { font-size: 16px; font-weight: 800; color: var(--text); }
     
+    /* Ô XEM/SỬA CHIA ĐÔI HAI MÀU NỔI BẬT */
     .btn-split-action {
       display: inline-flex; align-items: stretch;
       border-radius: 8px; overflow: hidden;
@@ -570,7 +571,7 @@
           </div>
         </div>
 
-        <!-- MULTI-SELECT DROPDOWN THUỐC ĐIỀU TRỊ -->
+        <!-- MULTI-SELECT DROPDOWN THUỐC ĐIỀU TRỊ (ĐÃ BỔ SUNG THYROZOL 5MG & PTU 100 MG) -->
         <div class="card">
           <div class="card-header"><span class="header-icon">💊</span><span>Thuốc điều trị</span></div>
           <div class="form-group">
@@ -581,6 +582,8 @@
                 <span>▼</span>
               </div>
               <div class="ms-menu" id="menuThuoc">
+                <label class="ms-item"><input type="checkbox" data-val="Thyrozol 5mg" onchange="syncFromDropdown('menuThuoc', 'mThuocDieuTri', 'labelThuoc')"> <span>Thyrozol 5mg</span></label>
+                <label class="ms-item"><input type="checkbox" data-val="PTU 100 mg" onchange="syncFromDropdown('menuThuoc', 'mThuocDieuTri', 'labelThuoc')"> <span>PTU 100 mg</span></label>
                 <label class="ms-item"><input type="checkbox" data-val="Levothyroxine 100mcg" onchange="syncFromDropdown('menuThuoc', 'mThuocDieuTri', 'labelThuoc')"> <span>Levothyroxine 100mcg</span></label>
                 <label class="ms-item"><input type="checkbox" data-val="Zedcal" onchange="syncFromDropdown('menuThuoc', 'mThuocDieuTri', 'labelThuoc')"> <span>Zedcal</span></label>
                 <label class="ms-item"><input type="checkbox" data-val="D3K2" onchange="syncFromDropdown('menuThuoc', 'mThuocDieuTri', 'labelThuoc')"> <span>D3K2</span></label>
