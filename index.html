@@ -37,7 +37,7 @@
       line-height: 1.45;
     }
 
-    /* MÀN HÌNH KHÓA AUTH */
+    /* MÀN HÌNH KHÓA */
     #lockScreen {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: linear-gradient(180deg, #f0fdfa 0%, #e2e8f0 100%);
@@ -195,7 +195,7 @@
     }
     .pi-name { font-size: 16px; font-weight: 800; color: var(--text); }
     
-    /* Ô XEM/SỬA CHIA ĐÔI HAI MÀU NỔI BẬT */
+    /* Ô XEM/SỬA CHIA ĐÔI HAI MÀU */
     .btn-split-action {
       display: inline-flex; align-items: stretch;
       border-radius: 8px; overflow: hidden;
@@ -220,7 +220,6 @@
     .pi-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
     .pi-diag { font-size: 13px; color: #334155; line-height: 1.45; }
 
-    /* MODAL FORM */
     #patientModal, #pinModal, #syncPromptModal {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(3px);
@@ -337,7 +336,6 @@
     }
     .cls-table td textarea:focus { border-color: var(--primary); }
 
-    /* HỘP THOẠI POPUP */
     .popup-box {
       background: #fff; width: 100%; max-width: 320px;
       border-radius: 16px; padding: 22px 20px; text-align: center;
@@ -356,7 +354,7 @@
 
   <div id="appToast">⏳ Đang xử lý...</div>
 
-  <!-- 1. MÀN HÌNH KHÓA (MÃ HÓA SHA-256 CHO MÃ 211069) -->
+  <!-- MÀN HÌNH KHÓA -->
   <div id="lockScreen">
     <div class="auth-card">
       <div class="auth-icon">
@@ -377,7 +375,7 @@
     </div>
   </div>
 
-  <!-- 2. GIAO DIỆN CHÍNH APP -->
+  <!-- GIAO DIỆN CHÍNH -->
   <div id="mainApp">
     <div class="top-navbar">
       <div class="brand-group">
@@ -444,7 +442,7 @@
     </div>
   </div>
 
-  <!-- 3. MODAL NHẬP / XEM HỒ SƠ -->
+  <!-- MODAL THÊM/SỬA BỆNH NHÂN -->
   <div id="patientModal">
     <div class="modal-container">
       <div class="modal-header">
@@ -632,7 +630,7 @@
     </div>
   </div>
 
-  <!-- 4. MODAL ĐỔI MẬT KHẨU MÁY CÁ NHÂN -->
+  <!-- MODAL ĐỔI MẬT KHẨU MÁY CÁ NHÂN -->
   <div id="pinModal">
     <div class="popup-box">
       <h3 style="margin-top:0; color: var(--primary);">Đổi mật khẩu App</h3>
@@ -655,7 +653,7 @@
     </div>
   </div>
 
-  <!-- 5. MODAL NHẬP MẬT KHẨU KHI TẢI / ĐỒNG BỘ TỪ SHEETS -->
+  <!-- MODAL NHẬP MẬT KHẨU KHI TẢI / ĐỒNG BỘ TỪ SHEETS -->
   <div id="syncPromptModal">
     <div class="popup-box">
       <div style="font-size:28px; margin-bottom:6px;">🔐</div>
@@ -675,9 +673,9 @@
   </div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwk06j1_EJtjJzbNZhNRDrtJIF6fGa22ZUY1bsW73tgMmD9gqJbBd8kyPkKYzwMoUMvjA/exec";
+    // URL WEB APP MỚI CỦA GOOGLE APPS SCRIPT
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbweGzbP980k3hRSm3XvzTI4zRuUOQd8uF1Yq9mZUGgl11v6inwBfx08i1WWvQBY9c8RXw/exec";
     
-    // MẬT KHẨU MẶC ĐỊNH
     const DEFAULT_PIN = "211069";
     const TARGET_AUTH_HASH = "8a5719efcfdd74cb5493202eb8682974b786c1274195191295b9d21213f56dcf";
 
@@ -698,7 +696,6 @@
       return "";
     }
 
-    // MỞ KHÓA APP
     document.getElementById("pinInput").addEventListener("input", function(e) {
       document.getElementById("authErrorMsg").innerText = "";
       if (this.value.length === 6) {
@@ -743,7 +740,6 @@
       setTimeout(() => { toast.style.display = "none"; }, duration);
     }
 
-    // QUẢN LÝ ĐỔI MẬT KHẨU MÁY CÁ NHÂN
     function openChangePinModal() {
       document.getElementById("pinModal").style.display = "flex";
       document.getElementById("oldPinInput").value = "";
@@ -780,7 +776,6 @@
       }, 1000);
     }
 
-    // HỘP THOẠI YÊU CẦU NHẬP MẬT KHẨU KHI TẢI / ĐỒNG BỘ DỮ LIỆU
     function promptSyncDown() {
       document.getElementById("syncPromptModal").style.display = "flex";
       document.getElementById("syncPinInput").value = "";
@@ -806,7 +801,6 @@
       }
     }
 
-    // TỰ ĐỘNG XUỐNG DÒNG THÊM DẤU GẠCH ĐẦU DÒNG
     document.addEventListener("keydown", function(e) {
       if (e.target && e.target.classList.contains("bullet-textarea") && e.key === "Enter") {
         e.preventDefault();
@@ -862,7 +856,6 @@
       return str;
     }
 
-    // TỰ TẠO MÃ BỆNH NHÂN SAU KHI NHẬP XONG TÊN VÀ NĂM SINH
     function autoGeneratePatientCode() {
       if (currentEditingIndex !== -1 && document.getElementById("mMaHS").value.trim() !== "") {
         return;
@@ -893,7 +886,6 @@
       document.getElementById("mMaHS").value = candidate;
     }
 
-    // SẮP XẾP HỒ SƠ THEO NGÀY KHÁM: TỪ GẦN NHẤT ĐẾN XA NHẤT
     function sortPatientsByDate() {
       patientList.sort((a, b) => {
         const dateA = a.ngayKham ? new Date(a.ngayKham).getTime() : 0;
@@ -914,7 +906,6 @@
       }
     }
 
-    // 1. TẢI TỪ GOOGLE SHEET VỀ APP
     async function executeSyncDownFromSheet() {
       showToast("⏳ Đang tải hồ sơ từ Google Sheet...");
       try {
@@ -961,7 +952,6 @@
       }
     }
 
-    // TỰ ĐỘNG ĐẨY TOÀN BỘ DANH SÁCH LÊN GOOGLE SHEETS
     async function autoPushAllToSheet() {
       try {
         fetch(SCRIPT_URL, {
@@ -979,7 +969,6 @@
       }
     }
 
-    // 2. XOÁ TOÀN BỘ DỮ LIỆU: ĐỒNG BỘ LÊN SHEET TRƯỚC RỒI MỚI XOÁ TRÊN MÁY
     async function confirmDeleteAllData() {
       if (patientList.length === 0) {
         alert("Hiện không có hồ sơ nào trên máy!");
@@ -1014,7 +1003,6 @@
       }
     }
 
-    // RENDER DANH SÁCH BỆNH NHÂN (BỎ DẤU #, NÚT XEM/SỬA CHIA ĐÔI 2 MÀU)
     function renderPatients() {
       const key = document.getElementById("patientSearch").value.toLowerCase().trim();
       const container = document.getElementById("patientListContainer");
@@ -1043,10 +1031,8 @@
         card.className = "patient-item";
         card.innerHTML = `
           <div class="pi-header">
-            <!-- ĐÃ BỎ DẤU # TRƯỚC SỐ THỨ TỰ -->
             <div class="pi-name">${p.stt} - ${p.hoTen || "Chưa có tên"}</div>
             
-            <!-- NÚT XEM/SỬA CHIA ĐÔI HAI MÀU NỔI BẬT -->
             <button class="btn-split-action" onclick="openEditModal(${originalIndex})" title="Xem và sửa hồ sơ">
               <span class="part-xem">Xem</span>
               <span class="part-sua">Sửa</span>
@@ -1145,7 +1131,6 @@
       target.focus();
     }
 
-    // KHI THÊM / SỬA BỆNH NHÂN: TỰ ĐỘNG ĐỒNG BỘ NGAY LÊN GOOGLE SHEET
     async function savePatientModal() {
       const ngayKham = document.getElementById("mNgayKham").value;
       const maHS = document.getElementById("mMaHS").value.trim().toUpperCase();
