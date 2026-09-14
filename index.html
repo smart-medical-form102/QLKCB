@@ -195,7 +195,6 @@
     }
     .pi-name { font-size: 16px; font-weight: 800; color: var(--text); }
     
-    /* Ô XEM/SỬA CHIA ĐÔI HAI MÀU NỔI BẬT */
     .btn-split-action {
       display: inline-flex; align-items: stretch;
       border-radius: 8px; overflow: hidden;
@@ -220,12 +219,12 @@
     .pi-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
     .pi-diag { font-size: 13px; color: #334155; line-height: 1.45; }
 
-    /* MENU THẢ XUỐNG TÍCH CHỌN NHIỀU MỤC (CUSTOM MULTI-SELECT DROPDOWN) */
+    /* MENU THẢ XUỐNG TÍCH CHỌN NHIỀU MỤC */
     .ms-dropdown {
       position: relative; width: 100%; margin-bottom: 8px;
     }
     .ms-btn {
-      width: 100%; padding: 10px 12px;
+      width: 100%; padding: 11px 12px;
       border: 1.5px solid var(--border); border-radius: 10px;
       background: #fafafa; font-size: 13.5px; font-weight: 600;
       color: #334155; display: flex; justify-content: space-between;
@@ -237,18 +236,18 @@
     .ms-menu {
       display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0;
       background: #fff; border: 1px solid var(--border); border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.12); z-index: 1050;
-      max-height: 220px; overflow-y: auto; padding: 6px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.14); z-index: 1050;
+      max-height: 230px; overflow-y: auto; padding: 6px;
     }
     .ms-menu.show { display: block; }
     .ms-item {
-      display: flex; align-items: center; gap: 8px;
-      padding: 8px 10px; border-radius: 8px; font-size: 13px;
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px; border-radius: 8px; font-size: 13.5px; font-weight: 500;
       color: #1e293b; cursor: pointer; transition: background 0.15s;
     }
     .ms-item:hover, .ms-item:active { background: #f0fdfa; }
     .ms-item input[type="checkbox"] {
-      width: 16px; height: 16px; margin: 0; accent-color: var(--primary); cursor: pointer;
+      width: 18px; height: 18px; margin: 0; accent-color: var(--primary); cursor: pointer;
     }
 
     /* HỘP THOẠI POPUP */
@@ -386,7 +385,7 @@
 
   <div id="appToast">⏳ Đang xử lý...</div>
 
-  <!-- 1. MÀN HÌNH KHÓA (MÃ HÓA SHA-256 CHO MÃ 211069) -->
+  <!-- 1. MÀN HÌNH KHÓA -->
   <div id="lockScreen">
     <div class="auth-card">
       <div class="auth-icon">
@@ -550,13 +549,13 @@
                 <span>▼</span>
               </div>
               <div class="ms-menu" id="menuCd">
-                <label class="ms-item"><input type="checkbox" value="K giáp đã PT" onchange="syncFromDropdown('menuCd', 'mChanDoan', 'labelCd')"> K giáp đã PT</label>
-                <label class="ms-item"><input type="checkbox" value="Basedow" onchange="syncFromDropdown('menuCd', 'mChanDoan', 'labelCd')"> Basedow</label>
-                <label class="ms-item"><input type="checkbox" value="Cường giáp" onchange="syncFromDropdown('menuCd', 'mChanDoan', 'labelCd')"> Cường giáp</label>
-                <label class="ms-item"><input type="checkbox" value="Suy giáp" onchange="syncFromDropdown('menuCd', 'mChanDoan', 'labelCd')"> Suy giáp</label>
-                <label class="ms-item"><input type="checkbox" value="Viêm tuyến giáp" onchange="syncFromDropdown('menuCd', 'mChanDoan', 'labelCd')"> Viêm tuyến giáp</label>
-                <label class="ms-item"><input type="checkbox" value="Bướu nhân tuyến giáp" onchange="syncFromDropdown('menuCd', 'mChanDoan', 'labelCd')"> Bướu nhân tuyến giáp</label>
-                <label class="ms-item"><input type="checkbox" value="Nang tuyến giáp" onchange="syncFromDropdown('menuCd', 'mChanDoan', 'labelCd')"> Nang tuyến giáp</label>
+                <label class="ms-item"><input type="checkbox" data-val="K giáp đã PT" onchange="syncFromDropdown('menuCd', 'mChanDoan', 'labelCd')"> <span>K giáp đã PT</span></label>
+                <label class="ms-item"><input type="checkbox" data-val="Basedow" onchange="syncFromDropdown('menuCd', 'mChanDoan', 'labelCd')"> <span>Basedow</span></label>
+                <label class="ms-item"><input type="checkbox" data-val="Cường giáp" onchange="syncFromDropdown('menuCd', 'mChanDoan', 'labelCd')"> <span>Cường giáp</span></label>
+                <label class="ms-item"><input type="checkbox" data-val="Suy giáp" onchange="syncFromDropdown('menuCd', 'mChanDoan', 'labelCd')"> <span>Suy giáp</span></label>
+                <label class="ms-item"><input type="checkbox" data-val="Viêm tuyến giáp" onchange="syncFromDropdown('menuCd', 'mChanDoan', 'labelCd')"> <span>Viêm tuyến giáp</span></label>
+                <label class="ms-item"><input type="checkbox" data-val="Bướu nhân tuyến giáp" onchange="syncFromDropdown('menuCd', 'mChanDoan', 'labelCd')"> <span>Bướu nhân tuyến giáp</span></label>
+                <label class="ms-item"><input type="checkbox" data-val="Nang tuyến giáp" onchange="syncFromDropdown('menuCd', 'mChanDoan', 'labelCd')"> <span>Nang tuyến giáp</span></label>
               </div>
             </div>
             <textarea id="mChanDoan" class="bullet-textarea" rows="3" placeholder="Nội dung chẩn đoán hiển thị ở đây, có thể gõ thêm..."></textarea>
@@ -582,15 +581,15 @@
                 <span>▼</span>
               </div>
               <div class="ms-menu" id="menuThuoc">
-                <label class="ms-item"><input type="checkbox" value="Levothyroxine 100mcg" onchange="syncFromDropdown('menuThuoc', 'mThuocDieuTri', 'labelThuoc')"> Levothyroxine 100mcg</label>
-                <label class="ms-item"><input type="checkbox" value="Zedcal" onchange="syncFromDropdown('menuThuoc', 'mThuocDieuTri', 'labelThuoc')"> Zedcal</label>
-                <label class="ms-item"><input type="checkbox" value="D3K2" onchange="syncFromDropdown('menuThuoc', 'mThuocDieuTri', 'labelThuoc')"> D3K2</label>
-                <label class="ms-item"><input type="checkbox" value="Amesia" onchange="syncFromDropdown('menuThuoc', 'mThuocDieuTri', 'labelThuoc')"> Amesia</label>
-                <label class="ms-item"><input type="checkbox" value="Seazimin (Omega3)" onchange="syncFromDropdown('menuThuoc', 'mThuocDieuTri', 'labelThuoc')"> Seazimin (Omega3)</label>
-                <label class="ms-item"><input type="checkbox" value="B-coenzym" onchange="syncFromDropdown('menuThuoc', 'mThuocDieuTri', 'labelThuoc')"> B-coenzym</label>
-                <label class="ms-item"><input type="checkbox" value="Greenpam" onchange="syncFromDropdown('menuThuoc', 'mThuocDieuTri', 'labelThuoc')"> Greenpam</label>
-                <label class="ms-item"><input type="checkbox" value="Atiferole" onchange="syncFromDropdown('menuThuoc', 'mThuocDieuTri', 'labelThuoc')"> Atiferole</label>
-                <label class="ms-item"><input type="checkbox" value="Anbaliv" onchange="syncFromDropdown('menuThuoc', 'mThuocDieuTri', 'labelThuoc')"> Anbaliv</label>
+                <label class="ms-item"><input type="checkbox" data-val="Levothyroxine 100mcg" onchange="syncFromDropdown('menuThuoc', 'mThuocDieuTri', 'labelThuoc')"> <span>Levothyroxine 100mcg</span></label>
+                <label class="ms-item"><input type="checkbox" data-val="Zedcal" onchange="syncFromDropdown('menuThuoc', 'mThuocDieuTri', 'labelThuoc')"> <span>Zedcal</span></label>
+                <label class="ms-item"><input type="checkbox" data-val="D3K2" onchange="syncFromDropdown('menuThuoc', 'mThuocDieuTri', 'labelThuoc')"> <span>D3K2</span></label>
+                <label class="ms-item"><input type="checkbox" data-val="Amesia" onchange="syncFromDropdown('menuThuoc', 'mThuocDieuTri', 'labelThuoc')"> <span>Amesia</span></label>
+                <label class="ms-item"><input type="checkbox" data-val="Seazimin (Omega3)" onchange="syncFromDropdown('menuThuoc', 'mThuocDieuTri', 'labelThuoc')"> <span>Seazimin (Omega3)</span></label>
+                <label class="ms-item"><input type="checkbox" data-val="B-coenzym" onchange="syncFromDropdown('menuThuoc', 'mThuocDieuTri', 'labelThuoc')"> <span>B-coenzym</span></label>
+                <label class="ms-item"><input type="checkbox" data-val="Greenpam" onchange="syncFromDropdown('menuThuoc', 'mThuocDieuTri', 'labelThuoc')"> <span>Greenpam</span></label>
+                <label class="ms-item"><input type="checkbox" data-val="Atiferole" onchange="syncFromDropdown('menuThuoc', 'mThuocDieuTri', 'labelThuoc')"> <span>Atiferole</span></label>
+                <label class="ms-item"><input type="checkbox" data-val="Anbaliv" onchange="syncFromDropdown('menuThuoc', 'mThuocDieuTri', 'labelThuoc')"> <span>Anbaliv</span></label>
               </div>
             </div>
             <textarea id="mThuocDieuTri" class="bullet-textarea" rows="4" placeholder="Danh sách thuốc hiển thị ở đây (có thể chỉnh sửa, ghi thêm liều dùng...)..."></textarea>
@@ -721,7 +720,6 @@
   </div>
 
   <script>
-    // URL WEB APP APPS SCRIPT MỚI ĐÃ ĐƯỢC TÍCH HỢP
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbweGzbP980k3hRSm3XvzTI4zRuUOQd8uF1Yq9mZUGgl11v6inwBfx08i1WWvQBY9c8RXw/exec";
     
     const DEFAULT_PIN = "211069";
@@ -748,7 +746,6 @@
     function toggleDropdown(menuId, btn) {
       const menu = document.getElementById(menuId);
       const isOpen = menu.classList.contains('show');
-      // Đóng các dropdown khác
       document.querySelectorAll('.ms-menu').forEach(m => m.classList.remove('show'));
       document.querySelectorAll('.ms-btn').forEach(b => b.classList.remove('open'));
       if (!isOpen) {
@@ -757,7 +754,6 @@
       }
     }
 
-    // Đóng dropdown khi chạm ra ngoài
     document.addEventListener('click', function(e) {
       if (!e.target.closest('.ms-dropdown')) {
         document.querySelectorAll('.ms-menu').forEach(m => m.classList.remove('show'));
@@ -765,32 +761,33 @@
       }
     });
 
-    /* ĐỒNG BỘ KHI TÍCH CHỌN TRONG MENU THẢ XUỐNG: TỪ 2 MỤC THÌ GẠCH ĐẦU DÒNG XUỐNG DÒNG */
+    /* LẤY CHÍNH XÁC TÊN MỤC DÙ DÙNG TRÊN BẤT KỲ TRÌNH DUYỆT NÀO */
+    function getItemText(cb) {
+      return (cb.getAttribute('data-val') || cb.value || cb.parentElement.textContent).trim();
+    }
+
+    /* ĐỒNG BỘ KHI TÍCH CHỌN: TỪ 2 MỤC THÌ GẠCH ĐẦU DÒNG XUỐNG DÒNG */
     function syncFromDropdown(menuId, textareaId, labelId) {
       const menu = document.getElementById(menuId);
       const checkedBoxes = Array.from(menu.querySelectorAll('input[type="checkbox"]:checked'));
-      const selectedVals = checkedBoxes.map(cb => cb.value);
+      const selectedVals = checkedBoxes.map(cb => getItemText(cb)).filter(v => v.length > 0);
       const textarea = document.getElementById(textareaId);
       const label = document.getElementById(labelId);
 
-      // Cập nhật nhãn trên thanh dropdown
       if (selectedVals.length === 0) {
         label.innerText = menuId === 'menuCd' ? '-- Nhấp để chọn chẩn đoán (chọn nhiều) --' : '-- Nhấp để chọn thuốc (chọn nhiều) --';
+        textarea.value = "";
       } else {
         label.innerText = `Đã chọn (${selectedVals.length}): ` + selectedVals.join(', ');
-      }
-
-      // Format dữ liệu đưa vào textarea
-      if (selectedVals.length === 1) {
-        textarea.value = selectedVals[0];
-      } else if (selectedVals.length >= 2) {
-        textarea.value = selectedVals.map(v => "- " + v).join('\n');
-      } else {
-        textarea.value = "";
+        if (selectedVals.length === 1) {
+          textarea.value = selectedVals[0];
+        } else {
+          textarea.value = selectedVals.map(v => "- " + v).join('\n');
+        }
       }
     }
 
-    /* ĐỒNG BỘ TRẠNG THÁI CHECKBOX THEO TEXTAREA KHI XEM/SỬA */
+    /* ĐỒNG BỘ TRẠNG THÁI CHECKBOX KHI XEM/SỬA */
     function syncDropdownCheckboxesFromText(menuId, textareaId, labelId) {
       const text = document.getElementById(textareaId).value.toLowerCase();
       const menu = document.getElementById(menuId);
@@ -801,12 +798,12 @@
       let count = 0;
       let names = [];
       cbs.forEach(cb => {
-        const valLower = cb.value.toLowerCase();
-        const isChecked = text.includes(valLower);
+        const itemVal = getItemText(cb).toLowerCase();
+        const isChecked = itemVal.length > 0 && text.includes(itemVal);
         cb.checked = isChecked;
         if (isChecked) {
           count++;
-          names.push(cb.value);
+          names.push(getItemText(cb));
         }
       });
 
@@ -955,7 +952,7 @@
       }
     });
 
-    /* ĐỊNH DẠNG TÓM TẮT CHẨN ĐOÁN GIAO DIỆN 1: Bệnh A / Bệnh B / Bệnh C */
+    /* HIỂN THỊ TÓM TẮT CHẨN ĐOÁN DẠNG: Bệnh A / Bệnh B / Bệnh C */
     function formatDiagnosis(diagText) {
       if (!diagText) return "---";
       const parts = diagText.split(/[\n\/]+/)
@@ -1159,10 +1156,8 @@
         card.className = "patient-item";
         card.innerHTML = `
           <div class="pi-header">
-            <!-- ĐÃ BỎ DẤU # TRƯỚC SỐ THỨ TỰ -->
             <div class="pi-name">${p.stt} - ${p.hoTen || "Chưa có tên"}</div>
             
-            <!-- NÚT XEM/SỬA CHIA ĐÔI HAI MÀU NỔI BẬT -->
             <button class="btn-split-action" onclick="openEditModal(${originalIndex})" title="Xem và sửa hồ sơ">
               <span class="part-xem">Xem</span>
               <span class="part-sua">Sửa</span>
@@ -1173,7 +1168,6 @@
             Ngày khám: <b>${p.ngayKham || '---'}</b> ${p.sdt ? '• SĐT: ' + p.sdt : ''}
           </div>
           <div class="pi-diag">
-            <!-- HIỂN THỊ DẠNG: Bệnh A / Bệnh B / Bệnh C -->
             <b>Chẩn đoán:</b> ${formatDiagnosis(p.chanDoan)}
           </div>
         `;
@@ -1215,7 +1209,6 @@
       document.getElementById("mThuocDieuTri").value = p.thuocDieuTri || "";
       document.getElementById("mKhac").value = p.khac || "";
 
-      // Đồng bộ trạng thái checkbox dropdown theo nội dung hiện có
       syncDropdownCheckboxesFromText('menuCd', 'mChanDoan', 'labelCd');
       syncDropdownCheckboxesFromText('menuThuoc', 'mThuocDieuTri', 'labelThuoc');
 
