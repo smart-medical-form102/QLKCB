@@ -220,6 +220,27 @@
     .pi-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
     .pi-diag { font-size: 13px; color: #334155; line-height: 1.45; }
 
+    /* MULTI-SELECT CHECKBOX CHIPS */
+    .chip-selector-wrap {
+      display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 9px;
+      max-height: 145px; overflow-y: auto; padding: 4px 1px;
+    }
+    .chip-check-item {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #f8fafc; border: 1.5px solid #cbd5e1;
+      padding: 6px 12px; border-radius: 20px; font-size: 12.5px;
+      font-weight: 600; color: #334155; cursor: pointer;
+      user-select: none; transition: all 0.15s ease;
+    }
+    .chip-check-item input[type="checkbox"] {
+      width: 16px; height: 16px; margin: 0;
+      accent-color: var(--primary); cursor: pointer;
+    }
+    .chip-check-item.active {
+      background: #ccfbf1; border-color: var(--primary); color: #0f766e;
+    }
+
+    /* HỘP THOẠI POPUP */
     #patientModal, #pinModal, #syncPromptModal {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(3px);
@@ -354,7 +375,7 @@
 
   <div id="appToast">⏳ Đang xử lý...</div>
 
-  <!-- MÀN HÌNH KHÓA -->
+  <!-- 1. MÀN HÌNH KHÓA (MÃ HÓA SHA-256 CHO MÃ 211069) -->
   <div id="lockScreen">
     <div class="auth-card">
       <div class="auth-icon">
@@ -375,7 +396,7 @@
     </div>
   </div>
 
-  <!-- GIAO DIỆN CHÍNH -->
+  <!-- 2. GIAO DIỆN CHÍNH APP -->
   <div id="mainApp">
     <div class="top-navbar">
       <div class="brand-group">
@@ -442,7 +463,7 @@
     </div>
   </div>
 
-  <!-- MODAL THÊM/SỬA BỆNH NHÂN -->
+  <!-- 3. MODAL NHẬP / XEM HỒ SƠ -->
   <div id="patientModal">
     <div class="modal-container">
       <div class="modal-header">
@@ -508,17 +529,19 @@
               <option value="Lành tính">
             </datalist>
           </div>
+
+          <!-- TÍCH CHỌN NHIỀU LOẠI CHẨN ĐOÁN -->
           <div class="form-group">
-            <label>Chẩn đoán:</label>
-            <select style="margin-bottom: 6px;" onchange="appendSelectVal('mChanDoan', this, ' / ')">
-              <option value="">-- Chọn nhanh để thêm --</option>
-              <option value="K giáp đã PT">K giáp đã PT</option>
-              <option value="Basedow">Basedow</option>
-              <option value="Cường giáp">Cường giáp</option>
-              <option value="Suy giáp">Suy giáp</option>
-              <option value="Viêm tuyến giáp">Viêm tuyến giáp</option>
-            </select>
-            <textarea id="mChanDoan" class="bullet-textarea" rows="2" placeholder="Chẩn đoán bệnh lý..."></textarea>
+            <label>Chẩn đoán (tích chọn nhiều loại, có thể gõ sửa bổ sung):</label>
+            <div class="chip-selector-wrap" id="cdChipWrap">
+              <label class="chip-check-item"><input type="checkbox" value="K giáp đã PT" onchange="handleMultiCheck(this, 'mChanDoan')"> K giáp đã PT</label>
+              <label class="chip-check-item"><input type="checkbox" value="Basedow" onchange="handleMultiCheck(this, 'mChanDoan')"> Basedow</label>
+              <label class="chip-check-item"><input type="checkbox" value="Cường giáp" onchange="handleMultiCheck(this, 'mChanDoan')"> Cường giáp</label>
+              <label class="chip-check-item"><input type="checkbox" value="Suy giáp" onchange="handleMultiCheck(this, 'mChanDoan')"> Suy giáp</label>
+              <label class="chip-check-item"><input type="checkbox" value="Viêm tuyến giáp" onchange="handleMultiCheck(this, 'mChanDoan')"> Viêm tuyến giáp</label>
+              <label class="chip-check-item"><input type="checkbox" value="Bướu nhân tuyến giáp" onchange="handleMultiCheck(this, 'mChanDoan')"> Bướu nhân tuyến giáp</label>
+            </div>
+            <textarea id="mChanDoan" class="bullet-textarea" rows="3" placeholder="Chẩn đoán bệnh lý..."></textarea>
           </div>
         </div>
 
@@ -530,22 +553,22 @@
           </div>
         </div>
 
+        <!-- TÍCH CHỌN NHIỀU LOẠI THUỐC ĐIỀU TRỊ -->
         <div class="card">
-          <div class="card-header"><span class="header-icon">💊</span><span>Thuốc điều trị</span></div>
+          <div class="card-header"><span class="header-icon">💊</span><span>Thuốc điều trị (tích chọn nhiều loại, có thể gõ sửa bổ sung)</span></div>
           <div class="form-group">
-            <select style="margin-bottom: 6px;" onchange="appendSelectVal('mThuocDieuTri', this, '\n- ')">
-              <option value="">-- Chọn thuốc --</option>
-              <option value="Levothyroxine 100mcg">Levothyroxine 100mcg</option>
-              <option value="Zedcal">Zedcal</option>
-              <option value="D3K2">D3K2</option>
-              <option value="Amesia">Amesia</option>
-              <option value="Seazimin (Omega3)">Seazimin (Omega3)</option>
-              <option value="B-coenzym">B-coenzym</option>
-              <option value="Greenpam">Greenpam</option>
-              <option value="Atiferole">Atiferole</option>
-              <option value="Anbaliv">Anbaliv</option>
-            </select>
-            <textarea id="mThuocDieuTri" class="bullet-textarea" rows="3" placeholder="Danh sách thuốc sẽ hiện ở đây..."></textarea>
+            <div class="chip-selector-wrap" id="thuocChipWrap">
+              <label class="chip-check-item"><input type="checkbox" value="Levothyroxine 100mcg" onchange="handleMultiCheck(this, 'mThuocDieuTri')"> Levothyroxine 100mcg</label>
+              <label class="chip-check-item"><input type="checkbox" value="Zedcal" onchange="handleMultiCheck(this, 'mThuocDieuTri')"> Zedcal</label>
+              <label class="chip-check-item"><input type="checkbox" value="D3K2" onchange="handleMultiCheck(this, 'mThuocDieuTri')"> D3K2</label>
+              <label class="chip-check-item"><input type="checkbox" value="Amesia" onchange="handleMultiCheck(this, 'mThuocDieuTri')"> Amesia</label>
+              <label class="chip-check-item"><input type="checkbox" value="Seazimin (Omega3)" onchange="handleMultiCheck(this, 'mThuocDieuTri')"> Seazimin (Omega3)</label>
+              <label class="chip-check-item"><input type="checkbox" value="B-coenzym" onchange="handleMultiCheck(this, 'mThuocDieuTri')"> B-coenzym</label>
+              <label class="chip-check-item"><input type="checkbox" value="Greenpam" onchange="handleMultiCheck(this, 'mThuocDieuTri')"> Greenpam</label>
+              <label class="chip-check-item"><input type="checkbox" value="Atiferole" onchange="handleMultiCheck(this, 'mThuocDieuTri')"> Atiferole</label>
+              <label class="chip-check-item"><input type="checkbox" value="Anbaliv" onchange="handleMultiCheck(this, 'mThuocDieuTri')"> Anbaliv</label>
+            </div>
+            <textarea id="mThuocDieuTri" class="bullet-textarea" rows="4" placeholder="Danh sách thuốc (tự động gạch đầu dòng, có thể sửa liều dùng...)..."></textarea>
           </div>
         </div>
 
@@ -673,7 +696,7 @@
   </div>
 
   <script>
-    // URL WEB APP MỚI CỦA GOOGLE APPS SCRIPT
+    // URL WEB APP APPS SCRIPT MỚI CỦA BẠN
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbweGzbP980k3hRSm3XvzTI4zRuUOQd8uF1Yq9mZUGgl11v6inwBfx08i1WWvQBY9c8RXw/exec";
     
     const DEFAULT_PIN = "211069";
@@ -801,6 +824,52 @@
       }
     }
 
+    // XỬ LÝ TÍCH CHỌN NHIỀU LOẠI (CHẨN ĐOÁN & THUỐC ĐIỀU TRỊ)
+    function handleMultiCheck(checkbox, textareaId) {
+      const val = checkbox.value;
+      const target = document.getElementById(textareaId);
+      let lines = target.value.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+      if (checkbox.checked) {
+        checkbox.parentElement.classList.add('active');
+        const exists = lines.some(l => l.replace(/^[-•\s]+/, '').trim().startsWith(val));
+        if (!exists) {
+          lines.push("- " + val);
+        }
+      } else {
+        checkbox.parentElement.classList.remove('active');
+        lines = lines.filter(l => !l.replace(/^[-•\s]+/, '').trim().startsWith(val));
+      }
+
+      target.value = lines.join('\n');
+    }
+
+    function syncCheckboxesWithText(containerId, textareaId) {
+      const target = document.getElementById(textareaId);
+      const text = target.value.toLowerCase();
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      const cbs = container.querySelectorAll('input[type="checkbox"]');
+      cbs.forEach(cb => {
+        const valLower = cb.value.toLowerCase();
+        const isChecked = text.includes(valLower);
+        cb.checked = isChecked;
+        if (isChecked) {
+          cb.parentElement.classList.add('active');
+        } else {
+          cb.parentElement.classList.remove('active');
+        }
+      });
+    }
+
+    function resetAllCheckboxes() {
+      document.querySelectorAll('.chip-check-item input[type="checkbox"]').forEach(cb => {
+        cb.checked = false;
+        cb.parentElement.classList.remove('active');
+      });
+    }
+
+    // TỰ ĐỘNG XUỐNG DÒNG THÊM DẤU GẠCH ĐẦU DÒNG
     document.addEventListener("keydown", function(e) {
       if (e.target && e.target.classList.contains("bullet-textarea") && e.key === "Enter") {
         e.preventDefault();
@@ -1084,6 +1153,9 @@
       document.getElementById("mThuocDieuTri").value = p.thuocDieuTri || "";
       document.getElementById("mKhac").value = p.khac || "";
 
+      syncCheckboxesWithText("cdChipWrap", "mChanDoan");
+      syncCheckboxesWithText("thuocChipWrap", "mThuocDieuTri");
+
       const cls = p.cls || {};
       const dates = cls.dates || [];
       for (let i = 0; i < 6; i++) {
@@ -1105,6 +1177,7 @@
     }
 
     function clearModalForm() {
+      resetAllCheckboxes();
       document.querySelectorAll("#patientModal input, #patientModal textarea").forEach(el => el.value = "");
     }
 
