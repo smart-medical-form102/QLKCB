@@ -571,7 +571,7 @@
           </div>
         </div>
 
-        <!-- MULTI-SELECT DROPDOWN THUỐC ĐIỀU TRỊ (ĐÃ CẬP NHẬT PTU 100mg VIẾT LIỀN) -->
+        <!-- MULTI-SELECT DROPDOWN THUỐC ĐIỀU TRỊ -->
         <div class="card">
           <div class="card-header"><span class="header-icon">💊</span><span>Thuốc điều trị</span></div>
           <div class="form-group">
@@ -675,7 +675,7 @@
 
       <div class="modal-footer">
         <button type="button" id="btnDeletePatient" class="btn-del" onclick="deleteCurrentPatient()">Xóa</button>
-        <button type="button" class="btn-save" onclick="savePatientModal()">Lưu & Đồng bộ Sheets</button>
+        <button type="button" class="btn-save" onclick="savePatientModal()">Lưu & Bổ sung Sheets</button>
       </div>
     </div>
   </div>
@@ -703,7 +703,7 @@
     </div>
   </div>
 
-  <!-- MODAL NHẬP MẬT KHẨU KHI TẢI / ĐỒNG BỘ TỪ SHEETS (ĐÃ XÓA CHỮ MẶC ĐỊNH ĐỂ BẢO MẬT) -->
+  <!-- MODAL NHẬP MẬT KHẨU KHI TẢI / ĐỒNG BỘ TỪ SHEETS -->
   <div id="syncPromptModal">
     <div class="popup-box">
       <div style="font-size:28px; margin-bottom:6px;">🔐</div>
@@ -768,7 +768,7 @@
       return (cb.getAttribute('data-val') || cb.value || cb.parentElement.textContent).trim();
     }
 
-    /* ĐỒNG BỘ KHI TÍCH CHỌN: TỪ 2 MỤC THÌ GẠCH ĐẦU DÒNG XUỐNG DÒNG */
+    /* ĐỒNG BỘ KHI TÍCH CHỌN */
     function syncFromDropdown(menuId, textareaId, labelId) {
       const menu = document.getElementById(menuId);
       const checkedBoxes = Array.from(menu.querySelectorAll('input[type="checkbox"]:checked'));
@@ -954,7 +954,6 @@
       }
     });
 
-    /* HIỂN THỊ TÓM TẮT CHẨN ĐOÁN DẠNG: Bệnh A / Bệnh B / Bệnh C */
     function formatDiagnosis(diagText) {
       if (!diagText) return "---";
       const parts = diagText.split(/[\n\/]+/)
@@ -1078,7 +1077,8 @@
       }
     }
 
-    async function autoPushAllToSheet() {
+    // GỬI LỆNH BỔ SUNG / CẬP NHẬT 1 BỆNH NHÂN (KHÔNG XOÁ CÁC BỆNH NHÂN KHÁC)
+    async function sendSavePatientToSheet(patient) {
       try {
         fetch(SCRIPT_URL, {
           method: "POST",
@@ -1086,8 +1086,8 @@
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({
             auth: TARGET_AUTH_HASH,
-            action: "SYNC_ALL",
-            data: patientList
+            action: "SAVE_PATIENT",
+            patient: patient
           })
         });
       } catch (err) {
@@ -1095,7 +1095,25 @@
       }
     }
 
-    // XOÁ TOÀN BỘ DỮ LIỆU: ĐỒNG BỘ LÊN SHEET TRƯỚC RỒI MỚI XOÁ MÁY
+    // GỬI LỆNH XOÁ ĐÚNG 1 BỆNH NHÂN TRÊN SHEET
+    async function sendDeletePatientToSheet(patient) {
+      try {
+        fetch(SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            auth: TARGET_AUTH_HASH,
+            action: "DELETE_PATIENT",
+            patient: patient
+          })
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // XOÁ TOÀN BỘ DỮ LIỆU TRÊN MÁY (ĐỒNG BỘ GỘP LÊN SHEET TRƯỚC RỒI MỚI XOÁ MÁY)
     async function confirmDeleteAllData() {
       if (patientList.length === 0) {
         alert("Hiện không có hồ sơ nào trên máy!");
@@ -1306,15 +1324,17 @@
       renderPatients();
       closePatientModal();
 
-      showToast("💾 Đang tự động đồng bộ lên Google Sheet...");
-      await autoPushAllToSheet();
-      showToast("✅ Đã lưu và đồng bộ lên Google Sheet!");
+      showToast("💾 Đang bổ sung hồ sơ lên Google Sheet...");
+      // GỬI BỔ SUNG ĐÚNG HỒ SƠ NÀY LÊN GOOGLE SHEET (KHÔNG XOÁ CÁC HỒ SƠ CŨ)
+      await sendSavePatientToSheet(patientData);
+      showToast("✅ Đã bổ sung thành công lên Google Sheet!");
     }
 
     async function deleteCurrentPatient() {
       if (currentEditingIndex === -1) return;
       const p = patientList[currentEditingIndex];
       if (confirm(`Bạn có chắc chắn muốn xóa hồ sơ: ${p.hoTen} (${p.maHS})?`)) {
+        const deletedPatient = { ...p };
         patientList.splice(currentEditingIndex, 1);
         sortPatientsByDate();
         localStorage.setItem("app_patients_cache", JSON.stringify(patientList));
@@ -1322,7 +1342,7 @@
         closePatientModal();
 
         showToast("🗑️ Đang đồng bộ xóa trên Google Sheet...");
-        await autoPushAllToSheet();
+        await sendDeletePatientToSheet(deletedPatient);
         showToast("✅ Đã xóa hồ sơ!");
       }
     }
