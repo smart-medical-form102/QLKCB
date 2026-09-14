@@ -37,7 +37,7 @@
       line-height: 1.45;
     }
 
-    /* MÀN HÌNH KHÓA XÁC THỰC */
+    /* MÀN HÌNH KHÓA AUTH */
     #lockScreen {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: linear-gradient(180deg, #f0fdfa 0%, #e2e8f0 100%);
@@ -265,7 +265,7 @@
       border-color: var(--primary); background: #fff;
     }
     
-    /* BỐ CỤC 2 CỘT TÁCH BIỆT RÕ RÀNG TRÊN IPAD/TABLET */
+    /* BỐ CỤC 2 CỘT TÁCH BIỆT RÕ RÀNG TRÊN TABLET */
     .grid-row { display: flex; gap: 14px; margin-bottom: 0; }
     .grid-col { flex: 1; min-width: 0; }
     @media (max-width: 540px) {
@@ -328,7 +328,7 @@
 
   <div id="appToast">⏳ Đang xử lý...</div>
 
-  <!-- 1. MÀN HÌNH KHÓA (MÃ HÓA SHA-256 CHO MÃ 211069) -->
+  <!-- 1. MÀN HÌNH KHÓA -->
   <div id="lockScreen">
     <div class="auth-card">
       <div class="auth-icon">
@@ -438,7 +438,7 @@
           </div>
           <div class="form-group">
             <label>Họ và tên (*):</label>
-            <!-- TỰ ĐỘNG IN HOA TOÀN BỘ KHI GÕ; TỰ TẠO MÃ KHI NHẬP XONG -->
+            <!-- TỰ ĐỘNG IN HOA KHI GÕ; TỰ TẠO MÃ KHI NHẬP XONG -->
             <input type="text" id="mHoTen" placeholder="VD: NGUYỄN VĂN TÂN" 
                    oninput="this.value = this.value.toUpperCase()" 
                    onchange="autoGeneratePatientCode()" 
@@ -614,9 +614,15 @@
     let patientList = [];
     let currentEditingIndex = -1;
 
+    // HÀM BĂM SHA-256 CHỐNG LỖI MỌI THIẾT BỊ
     async function sha256(str) {
-      const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
-      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+      try {
+        if (window.crypto && window.crypto.subtle) {
+          const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+          return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+      } catch (e) {}
+      return "";
     }
 
     document.getElementById("pinInput").addEventListener("input", function(e) {
@@ -627,13 +633,14 @@
     });
 
     async function handleAuthSubmit() {
-      const pinVal = document.getElementById("pinInput").value;
+      const pinVal = document.getElementById("pinInput").value.trim();
       if (pinVal.length !== 6) return;
 
       const inputHash = await sha256(pinVal);
 
-      if (inputHash === TARGET_AUTH_HASH) {
-        sessionStorage.setItem("app_auth_hash", inputHash);
+      // Cho phép đăng nhập nếu khớp trực tiếp mã 211069 hoặc khớp chuỗi băm
+      if (pinVal === "211069" || inputHash === TARGET_AUTH_HASH) {
+        sessionStorage.setItem("app_auth_hash", TARGET_AUTH_HASH);
         document.getElementById("lockScreen").style.display = "none";
         document.getElementById("mainApp").style.display = "block";
         document.getElementById("pinInput").value = "";
@@ -749,17 +756,17 @@
       document.getElementById("mMaHS").value = candidate;
     }
 
-    // HÀM SẮP XẾP HỒ SƠ THEO THỜI GIAN KHÁM MỚI NHẤT LÊN ĐẦU
+    // SẮP XẾP HỒ SƠ THEO THỜI GIAN KHÁM MỚI NHẤT LÊN ĐẦU
     function sortPatientsByDate() {
       patientList.sort((a, b) => {
         const dateA = a.ngayKham ? new Date(a.ngayKham).getTime() : 0;
         const dateB = b.ngayKham ? new Date(b.ngayKham).getTime() : 0;
-        return dateB - dateA; // Ngày mới nhất lên trước
+        return dateB - dateA;
       });
       patientList.forEach((item, idx) => { item.stt = idx + 1; });
     }
 
-    // 1. TẢI TỪ GOOGLE SHEET VỀ APP VÀ SẮP XẾP THỜI GIAN
+    // 1. TẢI TỪ GOOGLE SHEET VỀ APP
     async function syncDownFromSheet() {
       const auth = sessionStorage.getItem("app_auth_hash") || TARGET_AUTH_HASH;
       showToast("⏳ Đang tải hồ sơ từ Google Sheet...");
@@ -907,7 +914,7 @@
 
       document.getElementById("mNgayKham").value = nk;
       document.getElementById("mMaHS").value = p.maHS || "";
-      document.getElementById("mHoTen").value = p.hoTen || "";
+      document.getElementById("mHoTen").value = (p.hoTen || "").toUpperCase();
       document.getElementById("mGioiTinh").value = p.gioiTinh || "Nữ";
       document.getElementById("mNamSinh").value = p.namSinh || "";
       document.getElementById("mSdt").value = p.sdt || "";
@@ -1026,7 +1033,6 @@
         patientList[currentEditingIndex] = patientData;
       }
 
-      // Tự động sắp xếp ngày khám mới nhất lên đầu tiên
       sortPatientsByDate();
       renderPatients();
       closePatientModal();
