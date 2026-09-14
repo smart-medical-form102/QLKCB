@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>KHÁM BỆNH NGOẠI TRÚ</title>
 
-  <!-- PWA Cấu hình hiển thị App toàn màn hình -->
+  <!-- PWA Cấu hình App toàn màn hình -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="KHÁM BỆNH NGOẠI TRÚ">
   <meta name="theme-color" content="#0d9488">
 
-  <!-- Thư viện xuất Excel SheetJS -->
+  <!-- Thư viện SheetJS xuất Excel -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     :root {
@@ -39,7 +39,7 @@
       line-height: 1.45;
     }
 
-    /* 1. MÀN HÌNH KHÓA AUTH */
+    /* MÀN HÌNH KHÓA XÁC THỰC */
     #lockScreen {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: linear-gradient(180deg, #f0fdfa 0%, #e2e8f0 100%);
@@ -116,7 +116,7 @@
       margin-top: 8px; min-height: 18px; font-weight: 500;
     }
 
-    /* 2. GIAO DIỆN CHÍNH APP */
+    /* GIAO DIỆN CHÍNH */
     #mainApp { display: none; padding-bottom: 78px; }
     
     .top-navbar {
@@ -161,7 +161,7 @@
       border-radius: 12px; display: flex; align-items: center; justify-content: center;
     }
 
-    /* THANH TÌM KIẾM & NÚT THAO TÁC */
+    /* THANH TÌM KIẾM & THAO TÁC */
     .action-bar { padding: 0 14px; margin-bottom: 12px; }
     .search-input-wrap { position: relative; margin-bottom: 10px; }
     .search-input-wrap svg {
@@ -191,7 +191,7 @@
       cursor: pointer;
     }
 
-    /* CARD BỆNH NHÂN TRONG DANH SÁCH */
+    /* DANH SÁCH BỆNH NHÂN */
     .content-view { padding: 0 14px; }
     .patient-item {
       background: var(--surface); border-radius: var(--radius);
@@ -212,7 +212,7 @@
     .pi-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
     .pi-diag { font-size: 13px; color: #334155; line-height: 1.4; }
 
-    /* 3. MODAL NHẬP / XEM HỒ SƠ */
+    /* MODAL FORM NHẬP / SỬA HỒ SƠ */
     #patientModal {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(3px);
@@ -251,7 +251,7 @@
       font-size: 14px; font-weight: 600; cursor: pointer; display: none;
     }
 
-    /* CARD BIỂU MẪU */
+    /* CARD VÀ FIELD FORM */
     .card {
       background: var(--surface); border-radius: var(--radius);
       padding: 16px; margin-bottom: 12px;
@@ -278,14 +278,14 @@
     }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-    /* BẢNG CẬN LÂM SÀNG 6 THỜI ĐIỂM (CUỘN NGANG) */
+    /* BẢNG CẬN LÂM SÀNG 6 CỘT CHỌN NGÀY */
     .table-scroll {
       width: 100%; overflow-x: auto;
       border: 1px solid var(--border); border-radius: 10px;
       background: #fff; margin-top: 6px;
     }
     .cls-table {
-      width: 100%; min-width: 580px;
+      width: 100%; min-width: 820px;
       border-collapse: collapse; font-size: 13px;
     }
     .cls-table th, .cls-table td {
@@ -299,10 +299,12 @@
       width: 90px; text-align: left; padding-left: 8px;
       background: #f0fdfa; color: var(--primary-dark);
     }
-    .cls-table th input.time-hdr {
-      width: 100%; padding: 4px; border: 1px solid #cbd5e1;
-      border-radius: 6px; font-size: 11px; text-align: center;
+    .cls-table th input.time-date-picker {
+      width: 100%; min-width: 110px; padding: 4px 2px;
+      border: 1px solid #cbd5e1; border-radius: 6px;
+      font-size: 11.5px; text-align: center;
       background: #fff; font-weight: 600; outline: none;
+      color: #0f766e;
     }
     .cls-table td.row-title {
       font-weight: 700; text-align: left; padding-left: 8px;
@@ -364,7 +366,7 @@
     </div>
   </div>
 
-  <!-- 2. GIAO DIỆN CHÍNH -->
+  <!-- 2. GIAO DIỆN CHÍNH APP -->
   <div id="mainApp">
     <!-- TOP BAR -->
     <div class="top-navbar">
@@ -434,7 +436,7 @@
     </div>
   </div>
 
-  <!-- 3. MODAL THÊM / XEM / SỬA HỒ SƠ -->
+  <!-- 3. MODAL NHẬP / XEM HỒ SƠ -->
   <div id="patientModal">
     <div class="modal-container">
       <div class="modal-header">
@@ -443,7 +445,7 @@
       </div>
 
       <div class="modal-body">
-        <!-- HÀNH CHÍNH -->
+        <!-- 1. HÀNH CHÍNH (NỮ MẶC ĐỊNH TRƯỚC NAM) -->
         <div class="card">
           <div class="card-header">
             <span class="header-icon">📋</span>
@@ -467,8 +469,8 @@
             <div class="form-group">
               <label>Giới tính:</label>
               <select id="mGioiTinh">
+                <option value="Nữ" selected>Nữ</option>
                 <option value="Nam">Nam</option>
-                <option value="Nữ">Nữ</option>
                 <option value="Khác">Khác</option>
               </select>
             </div>
@@ -489,7 +491,7 @@
           </div>
         </div>
 
-        <!-- BỆNH HỌC -->
+        <!-- 2. BỆNH HỌC -->
         <div class="card">
           <div class="card-header">
             <span class="header-icon">🩺</span>
@@ -519,7 +521,7 @@
           </div>
         </div>
 
-        <!-- IOD PHÓNG XẠ (XUỐNG DÒNG NHIỀU DÒNG) -->
+        <!-- 3. IOD PHÓNG XẠ (CHO PHÉP XUỐNG DÒNG) -->
         <div class="card">
           <div class="card-header">
             <span class="header-icon">☢️</span>
@@ -531,7 +533,7 @@
           </div>
         </div>
 
-        <!-- THUỐC ĐIỀU TRỊ -->
+        <!-- 4. THUỐC ĐIỀU TRỊ -->
         <div class="card">
           <div class="card-header">
             <span class="header-icon">💊</span>
@@ -554,11 +556,11 @@
           </div>
         </div>
 
-        <!-- BẢNG THEO DÕI XÉT NGHIỆM CLS (6 THỜI ĐIỂM) -->
+        <!-- 5. BẢNG THEO DÕI XÉT NGHIỆM CLS (6 CỘT CHỌN NGÀY) -->
         <div class="card">
           <div class="card-header">
             <span class="header-icon">📊</span>
-            <span>Theo dõi xét nghiệm (6 thời điểm)</span>
+            <span>Theo dõi xét nghiệm (chọn ngày xét nghiệm)</span>
           </div>
           
           <div class="table-scroll">
@@ -566,50 +568,50 @@
               <thead>
                 <tr>
                   <th class="col-label">Xét nghiệm</th>
-                  <th><input type="text" class="time-hdr" id="tHdr0" placeholder="Lần 1"></th>
-                  <th><input type="text" class="time-hdr" id="tHdr1" placeholder="Lần 2"></th>
-                  <th><input type="text" class="time-hdr" id="tHdr2" placeholder="Lần 3"></th>
-                  <th><input type="text" class="time-hdr" id="tHdr3" placeholder="Lần 4"></th>
-                  <th><input type="text" class="time-hdr" id="tHdr4" placeholder="Lần 5"></th>
-                  <th><input type="text" class="time-hdr" id="tHdr5" placeholder="Lần 6"></th>
+                  <th><input type="date" class="time-date-picker" id="tDate0"></th>
+                  <th><input type="date" class="time-date-picker" id="tDate1"></th>
+                  <th><input type="date" class="time-date-picker" id="tDate2"></th>
+                  <th><input type="date" class="time-date-picker" id="tDate3"></th>
+                  <th><input type="date" class="time-date-picker" id="tDate4"></th>
+                  <th><input type="date" class="time-date-picker" id="tDate5"></th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
                   <td class="row-title">FT4</td>
-                  <td><input type="text" id="c_ft4_0"></td>
-                  <td><input type="text" id="c_ft4_1"></td>
-                  <td><input type="text" id="c_ft4_2"></td>
-                  <td><input type="text" id="c_ft4_3"></td>
-                  <td><input type="text" id="c_ft4_4"></td>
-                  <td><input type="text" id="c_ft4_5"></td>
+                  <td><input type="text" id="c_ft4_0" placeholder="---"></td>
+                  <td><input type="text" id="c_ft4_1" placeholder="---"></td>
+                  <td><input type="text" id="c_ft4_2" placeholder="---"></td>
+                  <td><input type="text" id="c_ft4_3" placeholder="---"></td>
+                  <td><input type="text" id="c_ft4_4" placeholder="---"></td>
+                  <td><input type="text" id="c_ft4_5" placeholder="---"></td>
                 </tr>
                 <tr>
                   <td class="row-title">TSH</td>
-                  <td><input type="text" id="c_tsh_0"></td>
-                  <td><input type="text" id="c_tsh_1"></td>
-                  <td><input type="text" id="c_tsh_2"></td>
-                  <td><input type="text" id="c_tsh_3"></td>
-                  <td><input type="text" id="c_tsh_4"></td>
-                  <td><input type="text" id="c_tsh_5"></td>
+                  <td><input type="text" id="c_tsh_0" placeholder="---"></td>
+                  <td><input type="text" id="c_tsh_1" placeholder="---"></td>
+                  <td><input type="text" id="c_tsh_2" placeholder="---"></td>
+                  <td><input type="text" id="c_tsh_3" placeholder="---"></td>
+                  <td><input type="text" id="c_tsh_4" placeholder="---"></td>
+                  <td><input type="text" id="c_tsh_5" placeholder="---"></td>
                 </tr>
                 <tr>
                   <td class="row-title">Tg</td>
-                  <td><input type="text" id="c_tg_0"></td>
-                  <td><input type="text" id="c_tg_1"></td>
-                  <td><input type="text" id="c_tg_2"></td>
-                  <td><input type="text" id="c_tg_3"></td>
-                  <td><input type="text" id="c_tg_4"></td>
-                  <td><input type="text" id="c_tg_5"></td>
+                  <td><input type="text" id="c_tg_0" placeholder="---"></td>
+                  <td><input type="text" id="c_tg_1" placeholder="---"></td>
+                  <td><input type="text" id="c_tg_2" placeholder="---"></td>
+                  <td><input type="text" id="c_tg_3" placeholder="---"></td>
+                  <td><input type="text" id="c_tg_4" placeholder="---"></td>
+                  <td><input type="text" id="c_tg_5" placeholder="---"></td>
                 </tr>
                 <tr>
                   <td class="row-title">TRAb</td>
-                  <td><input type="text" id="c_trab_0"></td>
-                  <td><input type="text" id="c_trab_1"></td>
-                  <td><input type="text" id="c_trab_2"></td>
-                  <td><input type="text" id="c_trab_3"></td>
-                  <td><input type="text" id="c_trab_4"></td>
-                  <td><input type="text" id="c_trab_5"></td>
+                  <td><input type="text" id="c_trab_0" placeholder="---"></td>
+                  <td><input type="text" id="c_trab_1" placeholder="---"></td>
+                  <td><input type="text" id="c_trab_2" placeholder="---"></td>
+                  <td><input type="text" id="c_trab_3" placeholder="---"></td>
+                  <td><input type="text" id="c_trab_4" placeholder="---"></td>
+                  <td><input type="text" id="c_trab_5" placeholder="---"></td>
                 </tr>
                 <tr>
                   <td class="row-title">Siêu âm</td>
@@ -624,11 +626,11 @@
             </table>
           </div>
           <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">
-            💡 Cuộn ngang để xem và nhập đầy đủ 6 thời điểm khám.
+            💡 Cuộn ngang để chọn ngày và nhập kết quả cho 6 mốc thời điểm.
           </div>
         </div>
 
-        <!-- GHI CHÚ KHÁC -->
+        <!-- 6. GHI CHÚ KHÁC -->
         <div class="card">
           <div class="card-header">
             <span class="header-icon">📝</span>
@@ -672,16 +674,26 @@
 
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwk06j1_EJtjJzbNZhNRDrtJIF6fGa22ZUY1bsW73tgMmD9gqJbBd8kyPkKYzwMoUMvjA/exec";
-    const DEFAULT_PIN = "211069";
+    
+    // MÃ PIN ĐƯỢC MÃ HÓA SHA-256 (Mã gốc 211069)
+    const DEFAULT_HASH = "8a5719efcfdd74cb5493202eb8682974b786c1274195191295b9d21213f56dcf";
 
     let patientList = [];
     let currentEditingIndex = -1;
 
-    function getStoredPin() {
-      return localStorage.getItem("app_pin_code") || DEFAULT_PIN;
+    // HÀM MÃ HÓA BĂM SHA-256
+    async function sha256(message) {
+      const msgBuffer = new TextEncoder().encode(message);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
-    // Nhập đủ 6 số tự động mở ứng dụng ngay lập tức
+    function getStoredHash() {
+      return localStorage.getItem("app_pin_hash") || DEFAULT_HASH;
+    }
+
+    // Tự động kiểm tra băm khi nhập đủ 6 số
     document.getElementById("pinInput").addEventListener("input", function(e) {
       document.getElementById("authErrorMsg").innerText = "";
       if (this.value.length === 6) {
@@ -689,11 +701,15 @@
       }
     });
 
-    function handleAuthSubmit() {
+    async function handleAuthSubmit() {
       const pinVal = document.getElementById("pinInput").value;
-      const storedPin = getStoredPin();
+      if (pinVal.length !== 6) return;
 
-      if (pinVal === storedPin) {
+      const inputHash = await sha256(pinVal);
+      const validHash = getStoredHash();
+
+      if (inputHash === validHash) {
+        sessionStorage.setItem("active_pin_session", pinVal);
         document.getElementById("lockScreen").style.display = "none";
         document.getElementById("mainApp").style.display = "block";
         document.getElementById("pinInput").value = "";
@@ -709,6 +725,7 @@
     }
 
     function lockApp() {
+      sessionStorage.removeItem("active_pin_session");
       document.getElementById("mainApp").style.display = "none";
       document.getElementById("lockScreen").style.display = "flex";
       document.getElementById("pinInput").value = "";
@@ -722,7 +739,7 @@
       setTimeout(() => { toast.style.display = "none"; }, duration);
     }
 
-    // Quản lý Đổi PIN
+    // ĐỔI MÃ PIN & LƯU HASH MỚI
     function openChangePinModal() {
       document.getElementById("pinModal").style.display = "flex";
       document.getElementById("oldPinInput").value = "";
@@ -732,12 +749,14 @@
     function closeChangePinModal() {
       document.getElementById("pinModal").style.display = "none";
     }
-    function saveNewPin() {
+
+    async function saveNewPin() {
       const oldP = document.getElementById("oldPinInput").value;
       const newP = document.getElementById("newPinInput").value;
       const msg = document.getElementById("changePinMsg");
 
-      if (oldP !== getStoredPin()) {
+      const oldHash = await sha256(oldP);
+      if (oldHash !== getStoredHash()) {
         msg.style.color = "red";
         msg.innerText = "Mã PIN hiện tại không chính xác!";
         return;
@@ -748,7 +767,10 @@
         return;
       }
 
-      localStorage.setItem("app_pin_code", newP);
+      const newHash = await sha256(newP);
+      localStorage.setItem("app_pin_hash", newHash);
+      sessionStorage.setItem("active_pin_session", newP);
+
       msg.style.color = "green";
       msg.innerText = "Đổi mã PIN thành công!";
       setTimeout(() => {
@@ -771,8 +793,8 @@
     async function loadFromSheets(isSilent = false) {
       if (!isSilent) showToast("⏳ Đang đồng bộ từ Google Sheets...");
       try {
-        const pin = getStoredPin();
-        const res = await fetch(`${SCRIPT_URL}?pass=${encodeURIComponent(pin)}`);
+        const currentPin = sessionStorage.getItem("active_pin_session") || "211069";
+        const res = await fetch(`${SCRIPT_URL}?pass=${encodeURIComponent(currentPin)}`);
         const json = await res.json();
         if (json.status === "success" && Array.isArray(json.data)) {
           patientList = json.data.map((p, i) => {
@@ -786,7 +808,7 @@
               maHS: p.maHS || ("A" + String(i + 1).padStart(3, '0')),
               ngayKham: p.ngayKham || "",
               hoTen: p.hoTen || "",
-              gioiTinh: p.gioiTinh || "Nam",
+              gioiTinh: p.gioiTinh || "Nữ",
               namSinh: p.namSinh || "",
               sdt: p.sdt ? String(p.sdt).replace("'", "") : "",
               diaChi: p.diaChi || "",
@@ -808,7 +830,7 @@
       }
     }
 
-    // HIỂN THỊ DANH SÁCH BỆNH NHÂN (THEO MẪU ẢNH 2)
+    // HIỂN THỊ DANH SÁCH BỆNH NHÂN
     function renderPatients() {
       const key = document.getElementById("patientSearch").value.toLowerCase().trim();
       const container = document.getElementById("patientListContainer");
@@ -852,7 +874,7 @@
       });
     }
 
-    // QUẢN LÝ MODAL THÊM / SỬA BỆNH NHÂN
+    // MODAL THÊM / SỬA BỆNH NHÂN
     function openNewPatientModal() {
       currentEditingIndex = -1;
       document.getElementById("modalHeading").innerText = "Thêm bệnh nhân";
@@ -860,6 +882,7 @@
       clearModalForm();
 
       document.getElementById("mNgayKham").valueAsDate = new Date();
+      document.getElementById("mGioiTinh").value = "Nữ"; // Mặc định Nữ
       document.getElementById("mMaHS").value = "A" + String(patientList.length + 1).padStart(3, '0');
       document.getElementById("patientModal").style.display = "flex";
     }
@@ -873,7 +896,7 @@
       document.getElementById("mNgayKham").value = p.ngayKham || "";
       document.getElementById("mMaHS").value = p.maHS || "";
       document.getElementById("mHoTen").value = p.hoTen || "";
-      document.getElementById("mGioiTinh").value = p.gioiTinh || "Nam";
+      document.getElementById("mGioiTinh").value = p.gioiTinh || "Nữ";
       document.getElementById("mNamSinh").value = p.namSinh || "";
       document.getElementById("mSdt").value = p.sdt || "";
       document.getElementById("mDiaChi").value = p.diaChi || "";
@@ -883,11 +906,11 @@
       document.getElementById("mThuocDieuTri").value = p.thuocDieuTri || "";
       document.getElementById("mKhac").value = p.khac || "";
 
-      // Điền dữ liệu bảng xét nghiệm 6 thời điểm
+      // Điền ngày và kết quả bảng xét nghiệm 6 thời điểm
       const cls = p.cls || {};
-      const headers = cls.headers || ["Lần 1", "Lần 2", "Lần 3", "Lần 4", "Lần 5", "Lần 6"];
+      const dates = cls.dates || [];
       for (let i = 0; i < 6; i++) {
-        document.getElementById(`tHdr${i}`).value = headers[i] || "";
+        document.getElementById(`tDate${i}`).value = dates[i] || "";
         document.getElementById(`c_ft4_${i}`).value = (cls.ft4 && cls.ft4[i]) || "";
         document.getElementById(`c_tsh_${i}`).value = (cls.tsh && cls.tsh[i]) || "";
         document.getElementById(`c_tg_${i}`).value = (cls.tg && cls.tg[i]) || "";
@@ -904,9 +927,6 @@
 
     function clearModalForm() {
       document.querySelectorAll("#patientModal input, #patientModal textarea").forEach(el => el.value = "");
-      for (let i = 0; i < 6; i++) {
-        document.getElementById(`tHdr${i}`).value = `Lần ${i + 1}`;
-      }
     }
 
     function appendSelectVal(targetId, selectEl) {
@@ -917,7 +937,7 @@
       target.focus();
     }
 
-    // LƯU HỒ SƠ VÀO DANH SÁCH & ĐẨY LÊN SHEETS
+    // LƯU HỒ SƠ VÀO SHEETS
     async function savePatientModal() {
       const hoTen = document.getElementById("mHoTen").value.trim();
       const sdt = document.getElementById("mSdt").value.trim();
@@ -931,9 +951,9 @@
         return;
       }
 
-      // Đóng gói dữ liệu bảng CLS 6 cột
+      // Đóng gói dữ liệu bảng CLS 6 cột ngày
       const clsData = {
-        headers: [],
+        dates: [],
         ft4: [],
         tsh: [],
         tg: [],
@@ -941,7 +961,7 @@
         sieuam: []
       };
       for (let i = 0; i < 6; i++) {
-        clsData.headers.push(document.getElementById(`tHdr${i}`).value || `Lần ${i+1}`);
+        clsData.dates.push(document.getElementById(`tDate${i}`).value || "");
         clsData.ft4.push(document.getElementById(`c_ft4_${i}`).value);
         clsData.tsh.push(document.getElementById(`c_tsh_${i}`).value);
         clsData.tg.push(document.getElementById(`c_tg_${i}`).value);
@@ -979,14 +999,14 @@
       showToast("💾 Đang lưu lên đám mây...");
 
       try {
-        const pin = getStoredPin();
+        const currentPin = sessionStorage.getItem("active_pin_session") || "211069";
         const actionType = currentEditingIndex === -1 ? "ADD" : "UPDATE";
         fetch(SCRIPT_URL, {
           method: "POST",
           mode: "no-cors",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({
-            pass: pin,
+            pass: currentPin,
             action: actionType,
             index: currentEditingIndex === -1 ? 0 : currentEditingIndex,
             data: patientData
@@ -1012,13 +1032,13 @@
         showToast("🗑️ Đang xóa hồ sơ...");
 
         try {
-          const pin = getStoredPin();
+          const currentPin = sessionStorage.getItem("active_pin_session") || "211069";
           fetch(SCRIPT_URL, {
             method: "POST",
             mode: "no-cors",
             headers: { "Content-Type": "text/plain;charset=utf-8" },
             body: JSON.stringify({
-              pass: pin,
+              pass: currentPin,
               action: "DELETE",
               index: delIdx
             })
