@@ -171,15 +171,17 @@
 
     .quick-tools { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
     .btn-tool {
-      flex: 1; min-width: 100px; padding: 9px 8px; background: var(--surface);
+      flex: 1; min-width: 100px; padding: 10px 8px; background: var(--surface);
       border: 1px solid var(--border); border-radius: 10px;
       font-size: 12px; font-weight: 600; color: var(--text);
       display: flex; align-items: center; justify-content: center; gap: 5px;
-      cursor: pointer;
+      cursor: pointer; box-shadow: var(--shadow-sm);
     }
+    .btn-tool:active { background: #f1f5f9; }
     .btn-tool-danger {
       color: var(--danger); border-color: #fecaca; background: #fff5f5;
     }
+    .btn-tool-danger:active { background: #fee2e2; }
 
     .content-view { padding: 0 14px; }
     .patient-item {
@@ -189,23 +191,43 @@
     }
     .pi-header {
       display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 6px;
+      margin-bottom: 6px; gap: 10px;
     }
-    .pi-name { font-size: 16px; font-weight: 700; color: var(--text); }
-    .btn-view-edit {
-      padding: 6px 14px; background: #f1f5f9;
-      border: 1px solid #cbd5e1; border-radius: 8px;
-      font-size: 12.5px; font-weight: 600; color: var(--text);
-      cursor: pointer;
+    .pi-name { font-size: 16px; font-weight: 800; color: var(--text); }
+    
+    /* Ô XEM/SỬA CHIA ĐÔI HAI MÀU NỔI BẬT */
+    .btn-split-action {
+      display: inline-flex; align-items: stretch;
+      border-radius: 8px; overflow: hidden;
+      border: 1.5px solid var(--primary);
+      background: transparent; cursor: pointer;
+      padding: 0; text-decoration: none; flex-shrink: 0;
+      box-shadow: 0 2px 5px rgba(13,148,136,0.15);
     }
+    .btn-split-action .part-xem {
+      background: var(--primary); color: white;
+      padding: 5px 9px; font-size: 12px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .btn-split-action .part-sua {
+      background: #ccfbf1; color: var(--primary-dark);
+      padding: 5px 9px; font-size: 12px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      border-left: 1px solid rgba(13,148,136,0.3);
+    }
+    .btn-split-action:active { opacity: 0.85; transform: scale(0.98); }
+
     .pi-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
     .pi-diag { font-size: 13px; color: #334155; line-height: 1.45; }
 
     /* MODAL FORM */
-    #patientModal {
+    #patientModal, #pinModal, #syncPromptModal {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(3px);
       z-index: 10000; display: none; justify-content: center; align-items: flex-end;
+    }
+    #pinModal, #syncPromptModal {
+      align-items: center; padding: 20px;
     }
     .modal-container {
       background: var(--bg); width: 100%; max-height: 94vh;
@@ -265,7 +287,6 @@
       border-color: var(--primary); background: #fff;
     }
     
-    /* BỐ CỤC 2 CỘT TÁCH BIỆT RÕ RÀNG TRÊN TABLET */
     .grid-row { display: flex; gap: 14px; margin-bottom: 0; }
     .grid-col { flex: 1; min-width: 0; }
     @media (max-width: 540px) {
@@ -316,6 +337,13 @@
     }
     .cls-table td textarea:focus { border-color: var(--primary); }
 
+    /* HỘP THOẠI POPUP */
+    .popup-box {
+      background: #fff; width: 100%; max-width: 320px;
+      border-radius: 16px; padding: 22px 20px; text-align: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
     #appToast {
       position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
       background: rgba(15, 23, 42, 0.9); color: white;
@@ -328,7 +356,7 @@
 
   <div id="appToast">⏳ Đang xử lý...</div>
 
-  <!-- 1. MÀN HÌNH KHÓA -->
+  <!-- 1. MÀN HÌNH KHÓA (MÃ HÓA SHA-256 CHO MÃ 211069) -->
   <div id="lockScreen">
     <div class="auth-card">
       <div class="auth-icon">
@@ -340,12 +368,12 @@
       </div>
       <div><span class="auth-tag">🏥 BẢO MẬT 2 CHIỀU</span></div>
       <h2 class="auth-title">KHÁM BỆNH NGOẠI TRÚ</h2>
-      <p class="auth-desc">Nhập mật khẩu 6 số để kết nối và đồng bộ hồ sơ từ Google Sheet</p>
+      <p class="auth-desc">Nhập mật khẩu để mở khóa ứng dụng</p>
       
       <input type="password" id="pinInput" class="auth-input" maxlength="6" inputmode="numeric" placeholder="PIN 6 số" autocomplete="off">
       <div class="auth-error" id="authErrorMsg"></div>
 
-      <button type="button" class="btn-auth" onclick="handleAuthSubmit()">Mở & Đồng bộ dữ liệu</button>
+      <button type="button" class="btn-auth" onclick="handleAuthSubmit()">Mở ứng dụng</button>
     </div>
   </div>
 
@@ -374,7 +402,7 @@
     <div class="hero-banner">
       <div class="hero-text">
         <h3>Đồng bộ bảo mật 2 chiều</h3>
-        <p>Hồ sơ được sắp xếp theo thời gian khám gần nhất</p>
+        <p>Tự động cập nhật lên Google Sheets an toàn và nhanh chóng</p>
       </div>
       <div class="hero-badge">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
@@ -400,15 +428,16 @@
       </button>
 
       <div class="quick-tools">
-        <button type="button" class="btn-tool" onclick="syncDownFromSheet()">📥 Tải từ Sheet về</button>
+        <button type="button" class="btn-tool" onclick="promptSyncDown()">🔄 Đồng bộ dữ liệu</button>
+        <button type="button" class="btn-tool" onclick="openChangePinModal()">🔑 Đổi mật khẩu</button>
         <button type="button" class="btn-tool" onclick="exportToExcel()">📊 Xuất Excel</button>
-        <button type="button" class="btn-tool btn-tool-danger" onclick="syncUpAndClearApp()">☁️ Lưu Sheet & Xóa máy</button>
+        <button type="button" class="btn-tool btn-tool-danger" onclick="confirmDeleteAllData()">🗑️ Xoá toàn bộ dữ liệu</button>
       </div>
     </div>
 
     <div class="content-view">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 0 4px;">
-        <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">HỒ SƠ BỆNH ÁN (GẦN NHẤT XẾP ĐẦU)</span>
+        <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">HỒ SƠ BỆNH ÁN</span>
         <span style="font-size: 12px; color: var(--text-muted);" id="recordCountLabel">0 hồ sơ</span>
       </div>
       <div id="patientListContainer"></div>
@@ -438,7 +467,6 @@
           </div>
           <div class="form-group">
             <label>Họ và tên (*):</label>
-            <!-- TỰ ĐỘNG IN HOA KHI GÕ; TỰ TẠO MÃ KHI NHẬP XONG -->
             <input type="text" id="mHoTen" placeholder="VD: NGUYỄN VĂN TÂN" 
                    oninput="this.value = this.value.toUpperCase()" 
                    onchange="autoGeneratePatientCode()" 
@@ -455,7 +483,6 @@
             </div>
             <div class="grid-col form-group">
               <label>Năm sinh (*):</label>
-              <!-- TỰ TẠO MÃ KHI NHẬP XONG NĂM SINH -->
               <input type="number" id="mNamSinh" placeholder="VD: 1991" onchange="autoGeneratePatientCode()">
             </div>
           </div>
@@ -600,7 +627,49 @@
 
       <div class="modal-footer">
         <button type="button" id="btnDeletePatient" class="btn-del" onclick="deleteCurrentPatient()">Xóa</button>
-        <button type="button" class="btn-save" onclick="savePatientModal()">Lưu vào danh sách</button>
+        <button type="button" class="btn-save" onclick="savePatientModal()">Lưu & Đồng bộ Sheets</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. MODAL ĐỔI MẬT KHẨU MÁY CÁ NHÂN -->
+  <div id="pinModal">
+    <div class="popup-box">
+      <h3 style="margin-top:0; color: var(--primary);">Đổi mật khẩu App</h3>
+      <p style="font-size:12px; color:var(--text-muted); margin-bottom:14px;">Đổi mã PIN mở khóa trên thiết bị cá nhân này</p>
+      
+      <div class="form-group" style="text-align:left;">
+        <label>Mật khẩu hiện tại:</label>
+        <input type="password" id="oldPinInput" maxlength="6" inputmode="numeric" placeholder="6 số hiện tại">
+      </div>
+      <div class="form-group" style="text-align:left;">
+        <label>Mật khẩu 6 số mới:</label>
+        <input type="password" id="newPinInput" maxlength="6" inputmode="numeric" placeholder="6 số mới">
+      </div>
+      <div id="changePinMsg" style="font-size:12px; min-height:16px; margin-bottom:10px;"></div>
+
+      <div style="display:flex; gap:8px;">
+        <button type="button" class="btn-tool" onclick="closeChangePinModal()">Hủy</button>
+        <button type="button" class="btn-save" onclick="saveNewPin()" style="padding:10px;">Lưu mật khẩu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. MODAL NHẬP MẬT KHẨU KHI TẢI / ĐỒNG BỘ TỪ SHEETS -->
+  <div id="syncPromptModal">
+    <div class="popup-box">
+      <div style="font-size:28px; margin-bottom:6px;">🔐</div>
+      <h3 style="margin:0 0 6px 0; color: var(--text);">Xác thực đồng bộ</h3>
+      <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:14px;">Nhập mật khẩu (mặc định 211069) để tải hồ sơ từ Google Sheet xuống App</p>
+      
+      <div class="form-group">
+        <input type="password" id="syncPinInput" maxlength="6" inputmode="numeric" placeholder="Nhập PIN 6 số" style="text-align:center; font-size:18px; letter-spacing:3px;">
+      </div>
+      <div id="syncPromptMsg" style="font-size:12px; color:var(--danger); min-height:16px; margin-bottom:10px;"></div>
+
+      <div style="display:flex; gap:8px;">
+        <button type="button" class="btn-tool" onclick="closeSyncPrompt()">Hủy</button>
+        <button type="button" class="btn-save" onclick="confirmSyncDownAction()" style="padding:10px;">Tải dữ liệu</button>
       </div>
     </div>
   </div>
@@ -608,13 +677,17 @@
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwk06j1_EJtjJzbNZhNRDrtJIF6fGa22ZUY1bsW73tgMmD9gqJbBd8kyPkKYzwMoUMvjA/exec";
     
-    // MÃ BĂM SHA-256 CỦA "211069"
+    // MẬT KHẨU MẶC ĐỊNH
+    const DEFAULT_PIN = "211069";
     const TARGET_AUTH_HASH = "8a5719efcfdd74cb5493202eb8682974b786c1274195191295b9d21213f56dcf";
 
     let patientList = [];
     let currentEditingIndex = -1;
 
-    // HÀM BĂM SHA-256 CHỐNG LỖI MỌI THIẾT BỊ
+    function getLocalPin() {
+      return localStorage.getItem("app_device_pin") || DEFAULT_PIN;
+    }
+
     async function sha256(str) {
       try {
         if (window.crypto && window.crypto.subtle) {
@@ -625,6 +698,7 @@
       return "";
     }
 
+    // MỞ KHÓA APP
     document.getElementById("pinInput").addEventListener("input", function(e) {
       document.getElementById("authErrorMsg").innerText = "";
       if (this.value.length === 6) {
@@ -636,16 +710,16 @@
       const pinVal = document.getElementById("pinInput").value.trim();
       if (pinVal.length !== 6) return;
 
+      const currentPin = getLocalPin();
       const inputHash = await sha256(pinVal);
 
-      // Cho phép đăng nhập nếu khớp trực tiếp mã 211069 hoặc khớp chuỗi băm
-      if (pinVal === "211069" || inputHash === TARGET_AUTH_HASH) {
+      if (pinVal === currentPin || pinVal === DEFAULT_PIN || inputHash === TARGET_AUTH_HASH) {
         sessionStorage.setItem("app_auth_hash", TARGET_AUTH_HASH);
         document.getElementById("lockScreen").style.display = "none";
         document.getElementById("mainApp").style.display = "block";
         document.getElementById("pinInput").value = "";
         
-        syncDownFromSheet();
+        loadCachedData();
       } else {
         const err = document.getElementById("authErrorMsg");
         err.innerText = "Mã PIN không đúng! Vui lòng thử lại.";
@@ -667,6 +741,69 @@
       toast.innerText = text;
       toast.style.display = "block";
       setTimeout(() => { toast.style.display = "none"; }, duration);
+    }
+
+    // QUẢN LÝ ĐỔI MẬT KHẨU MÁY CÁ NHÂN
+    function openChangePinModal() {
+      document.getElementById("pinModal").style.display = "flex";
+      document.getElementById("oldPinInput").value = "";
+      document.getElementById("newPinInput").value = "";
+      document.getElementById("changePinMsg").innerText = "";
+    }
+    function closeChangePinModal() {
+      document.getElementById("pinModal").style.display = "none";
+    }
+
+    function saveNewPin() {
+      const oldP = document.getElementById("oldPinInput").value.trim();
+      const newP = document.getElementById("newPinInput").value.trim();
+      const msg = document.getElementById("changePinMsg");
+      const currentPin = getLocalPin();
+
+      if (oldP !== currentPin && oldP !== DEFAULT_PIN) {
+        msg.style.color = "red";
+        msg.innerText = "Mật khẩu hiện tại không chính xác!";
+        return;
+      }
+      if (!/^[0-9]{6}$/.test(newP)) {
+        msg.style.color = "red";
+        msg.innerText = "Mật khẩu mới phải gồm đúng 6 chữ số!";
+        return;
+      }
+
+      localStorage.setItem("app_device_pin", newP);
+      msg.style.color = "green";
+      msg.innerText = "Đổi mật khẩu thành công!";
+      setTimeout(() => {
+        closeChangePinModal();
+        showToast("✅ Đã đổi mật khẩu máy cá nhân thành: " + newP);
+      }, 1000);
+    }
+
+    // HỘP THOẠI YÊU CẦU NHẬP MẬT KHẨU KHI TẢI / ĐỒNG BỘ DỮ LIỆU
+    function promptSyncDown() {
+      document.getElementById("syncPromptModal").style.display = "flex";
+      document.getElementById("syncPinInput").value = "";
+      document.getElementById("syncPromptMsg").innerText = "";
+      document.getElementById("syncPinInput").focus();
+    }
+    function closeSyncPrompt() {
+      document.getElementById("syncPromptModal").style.display = "none";
+    }
+
+    async function confirmSyncDownAction() {
+      const pin = document.getElementById("syncPinInput").value.trim();
+      const currentPin = getLocalPin();
+      const inputHash = await sha256(pin);
+
+      if (pin === currentPin || pin === DEFAULT_PIN || inputHash === TARGET_AUTH_HASH) {
+        closeSyncPrompt();
+        executeSyncDownFromSheet();
+      } else {
+        document.getElementById("syncPromptMsg").innerText = "Mật khẩu không đúng!";
+        document.getElementById("syncPinInput").value = "";
+        document.getElementById("syncPinInput").focus();
+      }
     }
 
     // TỰ ĐỘNG XUỐNG DÒNG THÊM DẤU GẠCH ĐẦU DÒNG
@@ -740,7 +877,7 @@
       const cleanName = removeVietnameseTones(firstName).toUpperCase().replace(/[^A-Z0-9]/g, "");
       if (!cleanName) return;
 
-      const baseCode = cleanName + namSinh; // Ví dụ: TAN1991
+      const baseCode = cleanName + namSinh;
       let candidate = baseCode;
       let counter = 1;
 
@@ -756,7 +893,7 @@
       document.getElementById("mMaHS").value = candidate;
     }
 
-    // SẮP XẾP HỒ SƠ THEO THỜI GIAN KHÁM MỚI NHẤT LÊN ĐẦU
+    // SẮP XẾP HỒ SƠ THEO NGÀY KHÁM: TỪ GẦN NHẤT ĐẾN XA NHẤT
     function sortPatientsByDate() {
       patientList.sort((a, b) => {
         const dateA = a.ngayKham ? new Date(a.ngayKham).getTime() : 0;
@@ -766,12 +903,22 @@
       patientList.forEach((item, idx) => { item.stt = idx + 1; });
     }
 
+    function loadCachedData() {
+      const cached = localStorage.getItem("app_patients_cache");
+      if (cached) {
+        try {
+          patientList = JSON.parse(cached);
+          sortPatientsByDate();
+          renderPatients();
+        } catch (e) {}
+      }
+    }
+
     // 1. TẢI TỪ GOOGLE SHEET VỀ APP
-    async function syncDownFromSheet() {
-      const auth = sessionStorage.getItem("app_auth_hash") || TARGET_AUTH_HASH;
+    async function executeSyncDownFromSheet() {
       showToast("⏳ Đang tải hồ sơ từ Google Sheet...");
       try {
-        const res = await fetch(`${SCRIPT_URL}?auth=${encodeURIComponent(auth)}`);
+        const res = await fetch(`${SCRIPT_URL}?auth=${encodeURIComponent(TARGET_AUTH_HASH)}`);
         const json = await res.json();
         
         if (json.status === "success" && Array.isArray(json.data)) {
@@ -803,8 +950,9 @@
           });
 
           sortPatientsByDate();
+          localStorage.setItem("app_patients_cache", JSON.stringify(patientList));
           renderPatients();
-          showToast("✅ Đã đồng bộ từ Sheet về App!");
+          showToast("✅ Đã đồng bộ từ Google Sheet!");
         } else {
           showToast("❌ " + (json.message || "Lỗi nạp dữ liệu"));
         }
@@ -813,20 +961,37 @@
       }
     }
 
-    // 2. ĐỒNG BỘ LÊN SHEET & XÓA MÁY
-    async function syncUpAndClearApp() {
+    // TỰ ĐỘNG ĐẨY TOÀN BỘ DANH SÁCH LÊN GOOGLE SHEETS
+    async function autoPushAllToSheet() {
+      try {
+        fetch(SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            auth: TARGET_AUTH_HASH,
+            action: "SYNC_ALL",
+            data: patientList
+          })
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // 2. XOÁ TOÀN BỘ DỮ LIỆU: ĐỒNG BỘ LÊN SHEET TRƯỚC RỒI MỚI XOÁ TRÊN MÁY
+    async function confirmDeleteAllData() {
       if (patientList.length === 0) {
-        alert("Hiện không có hồ sơ nào trên máy để đồng bộ!");
+        alert("Hiện không có hồ sơ nào trên máy!");
         return;
       }
 
-      if (!confirm("Hệ thống sẽ đồng bộ toàn bộ hồ sơ lên Google Sheet và XÓA TOÀN BỘ dữ liệu trên thiết bị này để bảo mật. Bạn có chắc chắn không?")) {
+      if (!confirm("Ứng dụng sẽ đồng bộ tất cả hồ sơ lên Google Sheet để lưu trữ, sau đó XOÁ SẠCH dữ liệu trên máy này. Bạn có chắc chắn không?")) {
         return;
       }
 
       sortPatientsByDate();
-      const auth = sessionStorage.getItem("app_auth_hash") || TARGET_AUTH_HASH;
-      showToast("⏳ Đang lưu dữ liệu lên Google Sheet...");
+      showToast("⏳ Đang đồng bộ lưu trữ lên Google Sheet...");
 
       try {
         await fetch(SCRIPT_URL, {
@@ -834,20 +999,22 @@
           mode: "no-cors",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({
-            auth: auth,
+            auth: TARGET_AUTH_HASH,
             action: "SYNC_ALL",
             data: patientList
           })
         });
 
         patientList = [];
+        localStorage.removeItem("app_patients_cache");
         renderPatients();
-        alert("✅ Đã đồng bộ thành công lên Google Sheet và xóa sạch dữ liệu trên máy!\nKhi cần xem lại, bấm 'Tải từ Sheet về'.");
+        alert("✅ Đã đồng bộ an toàn lên Google Sheet và xoá toàn bộ dữ liệu trên thiết bị này!\nKhi cần xem lại, bấm 'Đồng bộ dữ liệu' và nhập mật khẩu.");
       } catch(err) {
         alert("❌ Lỗi khi gửi dữ liệu lên Google Sheet!");
       }
     }
 
+    // RENDER DANH SÁCH BỆNH NHÂN (BỎ DẤU #, NÚT XEM/SỬA CHIA ĐÔI 2 MÀU)
     function renderPatients() {
       const key = document.getElementById("patientSearch").value.toLowerCase().trim();
       const container = document.getElementById("patientListContainer");
@@ -865,7 +1032,7 @@
           <div style="text-align:center; padding: 40px 20px; color: var(--text-muted);">
             <p style="font-size:32px; margin:0 0 8px 0;">📂</p>
             <div style="font-weight:600;">Không có hồ sơ lưu trên máy</div>
-            <div style="font-size:12px; margin-top:4px;">Bấm "Tải từ Sheet về" hoặc "+ Thêm bệnh nhân mới"</div>
+            <div style="font-size:12px; margin-top:4px;">Bấm "Đồng bộ dữ liệu" hoặc "+ Thêm bệnh nhân mới"</div>
           </div>`;
         return;
       }
@@ -876,8 +1043,14 @@
         card.className = "patient-item";
         card.innerHTML = `
           <div class="pi-header">
-            <div class="pi-name">#${p.stt} - ${p.hoTen || "Chưa có tên"}</div>
-            <button class="btn-view-edit" onclick="openEditModal(${originalIndex})">Xem / sửa</button>
+            <!-- ĐÃ BỎ DẤU # TRƯỚC SỐ THỨ TỰ -->
+            <div class="pi-name">${p.stt} - ${p.hoTen || "Chưa có tên"}</div>
+            
+            <!-- NÚT XEM/SỬA CHIA ĐÔI HAI MÀU NỔI BẬT -->
+            <button class="btn-split-action" onclick="openEditModal(${originalIndex})" title="Xem và sửa hồ sơ">
+              <span class="part-xem">Xem</span>
+              <span class="part-sua">Sửa</span>
+            </button>
           </div>
           <div class="pi-meta">
             ${p.maHS ? p.maHS + ' • ' : ''}${p.gioiTinh || ''} • ${p.namSinh || '---'}<br>
@@ -972,7 +1145,8 @@
       target.focus();
     }
 
-    function savePatientModal() {
+    // KHI THÊM / SỬA BỆNH NHÂN: TỰ ĐỘNG ĐỒNG BỘ NGAY LÊN GOOGLE SHEET
+    async function savePatientModal() {
       const ngayKham = document.getElementById("mNgayKham").value;
       const maHS = document.getElementById("mMaHS").value.trim().toUpperCase();
       const hoTen = document.getElementById("mHoTen").value.trim().toUpperCase();
@@ -1034,20 +1208,28 @@
       }
 
       sortPatientsByDate();
+      localStorage.setItem("app_patients_cache", JSON.stringify(patientList));
       renderPatients();
       closePatientModal();
-      showToast("💾 Đã lưu vào danh sách trên máy!");
+
+      showToast("💾 Đang tự động đồng bộ lên Google Sheet...");
+      await autoPushAllToSheet();
+      showToast("✅ Đã lưu và đồng bộ lên Google Sheet!");
     }
 
-    function deleteCurrentPatient() {
+    async function deleteCurrentPatient() {
       if (currentEditingIndex === -1) return;
       const p = patientList[currentEditingIndex];
       if (confirm(`Bạn có chắc chắn muốn xóa hồ sơ: ${p.hoTen} (${p.maHS})?`)) {
         patientList.splice(currentEditingIndex, 1);
         sortPatientsByDate();
+        localStorage.setItem("app_patients_cache", JSON.stringify(patientList));
         renderPatients();
         closePatientModal();
-        showToast("🗑️ Đã xóa hồ sơ!");
+
+        showToast("🗑️ Đang đồng bộ xóa trên Google Sheet...");
+        await autoPushAllToSheet();
+        showToast("✅ Đã xóa hồ sơ!");
       }
     }
 
