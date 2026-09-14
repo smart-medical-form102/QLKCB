@@ -39,7 +39,7 @@
       line-height: 1.45;
     }
 
-    /* MÀN HÌNH KHÓA XÁC THỰC */
+    /* 1. MÀN HÌNH KHÓA XÁC THỰC */
     #lockScreen {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: linear-gradient(180deg, #f0fdfa 0%, #e2e8f0 100%);
@@ -116,7 +116,7 @@
       margin-top: 8px; min-height: 18px; font-weight: 500;
     }
 
-    /* GIAO DIỆN CHÍNH */
+    /* 2. GIAO DIỆN CHÍNH APP */
     #mainApp { display: none; padding-bottom: 78px; }
     
     .top-navbar {
@@ -251,7 +251,7 @@
       font-size: 14px; font-weight: 600; cursor: pointer; display: none;
     }
 
-    /* CARD VÀ FIELD FORM */
+    /* CARD VÀ FORM FIELDS */
     .card {
       background: var(--surface); border-radius: var(--radius);
       padding: 16px; margin-bottom: 12px;
@@ -341,7 +341,7 @@
 </head>
 <body>
 
-  <!-- TOAST -->
+  <!-- TOAST THÔNG BÁO -->
   <div id="appToast">⏳ Đang xử lý...</div>
 
   <!-- 1. MÀN HÌNH KHÓA XÁC THỰC -->
@@ -445,7 +445,7 @@
       </div>
 
       <div class="modal-body">
-        <!-- 1. HÀNH CHÍNH (NỮ MẶC ĐỊNH TRƯỚC NAM) -->
+        <!-- HÀNH CHÍNH (NỮ MẶC ĐỊNH TRƯỚC NAM) -->
         <div class="card">
           <div class="card-header">
             <span class="header-icon">📋</span>
@@ -491,7 +491,7 @@
           </div>
         </div>
 
-        <!-- 2. BỆNH HỌC -->
+        <!-- BỆNH HỌC -->
         <div class="card">
           <div class="card-header">
             <span class="header-icon">🩺</span>
@@ -521,7 +521,7 @@
           </div>
         </div>
 
-        <!-- 3. IOD PHÓNG XẠ (CHO PHÉP XUỐNG DÒNG) -->
+        <!-- IOD PHÓNG XẠ (XUỐNG DÒNG NHIỀU DÒNG) -->
         <div class="card">
           <div class="card-header">
             <span class="header-icon">☢️</span>
@@ -533,7 +533,7 @@
           </div>
         </div>
 
-        <!-- 4. THUỐC ĐIỀU TRỊ -->
+        <!-- THUỐC ĐIỀU TRỊ -->
         <div class="card">
           <div class="card-header">
             <span class="header-icon">💊</span>
@@ -556,7 +556,7 @@
           </div>
         </div>
 
-        <!-- 5. BẢNG THEO DÕI XÉT NGHIỆM CLS (6 CỘT CHỌN NGÀY) -->
+        <!-- BẢNG THEO DÕI XÉT NGHIỆM CLS (6 CỘT CHỌN NGÀY) -->
         <div class="card">
           <div class="card-header">
             <span class="header-icon">📊</span>
@@ -630,7 +630,7 @@
           </div>
         </div>
 
-        <!-- 6. GHI CHÚ KHÁC -->
+        <!-- GHI CHÚ KHÁC -->
         <div class="card">
           <div class="card-header">
             <span class="header-icon">📝</span>
@@ -675,25 +675,17 @@
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwk06j1_EJtjJzbNZhNRDrtJIF6fGa22ZUY1bsW73tgMmD9gqJbBd8kyPkKYzwMoUMvjA/exec";
     
-    // MÃ PIN ĐƯỢC MÃ HÓA SHA-256 (Mã gốc 211069)
-    const DEFAULT_HASH = "8a5719efcfdd74cb5493202eb8682974b786c1274195191295b9d21213f56dcf";
+    // MÃ PIN MẶC ĐỊNH MỚI
+    const DEFAULT_PIN = "190590";
 
     let patientList = [];
     let currentEditingIndex = -1;
 
-    // HÀM MÃ HÓA BĂM SHA-256
-    async function sha256(message) {
-      const msgBuffer = new TextEncoder().encode(message);
-      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    function getValidPin() {
+      return localStorage.getItem("app_pin_custom") || DEFAULT_PIN;
     }
 
-    function getStoredHash() {
-      return localStorage.getItem("app_pin_hash") || DEFAULT_HASH;
-    }
-
-    // Tự động kiểm tra băm khi nhập đủ 6 số
+    // Tự động kiểm tra mở khóa khi nhập đủ 6 số
     document.getElementById("pinInput").addEventListener("input", function(e) {
       document.getElementById("authErrorMsg").innerText = "";
       if (this.value.length === 6) {
@@ -701,14 +693,14 @@
       }
     });
 
-    async function handleAuthSubmit() {
+    function handleAuthSubmit() {
       const pinVal = document.getElementById("pinInput").value;
       if (pinVal.length !== 6) return;
 
-      const inputHash = await sha256(pinVal);
-      const validHash = getStoredHash();
+      const currentPin = getValidPin();
 
-      if (inputHash === validHash) {
+      // Chấp nhận mã 190590 hoặc mã người dùng đã chủ động đổi
+      if (pinVal === DEFAULT_PIN || pinVal === currentPin) {
         sessionStorage.setItem("active_pin_session", pinVal);
         document.getElementById("lockScreen").style.display = "none";
         document.getElementById("mainApp").style.display = "block";
@@ -739,7 +731,7 @@
       setTimeout(() => { toast.style.display = "none"; }, duration);
     }
 
-    // ĐỔI MÃ PIN & LƯU HASH MỚI
+    // ĐỔI MÃ PIN TRÊN GIAO DIỆN
     function openChangePinModal() {
       document.getElementById("pinModal").style.display = "flex";
       document.getElementById("oldPinInput").value = "";
@@ -750,13 +742,13 @@
       document.getElementById("pinModal").style.display = "none";
     }
 
-    async function saveNewPin() {
+    function saveNewPin() {
       const oldP = document.getElementById("oldPinInput").value;
       const newP = document.getElementById("newPinInput").value;
       const msg = document.getElementById("changePinMsg");
+      const currentPin = getValidPin();
 
-      const oldHash = await sha256(oldP);
-      if (oldHash !== getStoredHash()) {
+      if (oldP !== currentPin && oldP !== DEFAULT_PIN) {
         msg.style.color = "red";
         msg.innerText = "Mã PIN hiện tại không chính xác!";
         return;
@@ -767,8 +759,7 @@
         return;
       }
 
-      const newHash = await sha256(newP);
-      localStorage.setItem("app_pin_hash", newHash);
+      localStorage.setItem("app_pin_custom", newP);
       sessionStorage.setItem("active_pin_session", newP);
 
       msg.style.color = "green";
@@ -793,7 +784,7 @@
     async function loadFromSheets(isSilent = false) {
       if (!isSilent) showToast("⏳ Đang đồng bộ từ Google Sheets...");
       try {
-        const currentPin = sessionStorage.getItem("active_pin_session") || "211069";
+        const currentPin = sessionStorage.getItem("active_pin_session") || DEFAULT_PIN;
         const res = await fetch(`${SCRIPT_URL}?pass=${encodeURIComponent(currentPin)}`);
         const json = await res.json();
         if (json.status === "success" && Array.isArray(json.data)) {
@@ -906,7 +897,7 @@
       document.getElementById("mThuocDieuTri").value = p.thuocDieuTri || "";
       document.getElementById("mKhac").value = p.khac || "";
 
-      // Điền ngày và kết quả bảng xét nghiệm 6 thời điểm
+      // Điền dữ liệu bảng xét nghiệm 6 thời điểm
       const cls = p.cls || {};
       const dates = cls.dates || [];
       for (let i = 0; i < 6; i++) {
@@ -937,7 +928,7 @@
       target.focus();
     }
 
-    // LƯU HỒ SƠ VÀO SHEETS
+    // LƯU HỒ SƠ VÀO GOOGLE SHEETS
     async function savePatientModal() {
       const hoTen = document.getElementById("mHoTen").value.trim();
       const sdt = document.getElementById("mSdt").value.trim();
@@ -951,7 +942,7 @@
         return;
       }
 
-      // Đóng gói dữ liệu bảng CLS 6 cột ngày
+      // Thu thập dữ liệu bảng CLS 6 cột ngày
       const clsData = {
         dates: [],
         ft4: [],
@@ -999,7 +990,7 @@
       showToast("💾 Đang lưu lên đám mây...");
 
       try {
-        const currentPin = sessionStorage.getItem("active_pin_session") || "211069";
+        const currentPin = sessionStorage.getItem("active_pin_session") || DEFAULT_PIN;
         const actionType = currentEditingIndex === -1 ? "ADD" : "UPDATE";
         fetch(SCRIPT_URL, {
           method: "POST",
@@ -1032,7 +1023,7 @@
         showToast("🗑️ Đang xóa hồ sơ...");
 
         try {
-          const currentPin = sessionStorage.getItem("active_pin_session") || "211069";
+          const currentPin = sessionStorage.getItem("active_pin_session") || DEFAULT_PIN;
           fetch(SCRIPT_URL, {
             method: "POST",
             mode: "no-cors",
