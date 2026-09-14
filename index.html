@@ -191,7 +191,7 @@
       cursor: pointer;
     }
 
-    /* DANH SÁCH BỆNH NHÂN */
+    /* DANH SÁCH BỆNH NHÂN (GIAO DIỆN 1) */
     .content-view { padding: 0 14px; }
     .patient-item {
       background: var(--surface); border-radius: var(--radius);
@@ -210,7 +210,7 @@
       cursor: pointer;
     }
     .pi-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
-    .pi-diag { font-size: 13px; color: #334155; line-height: 1.4; }
+    .pi-diag { font-size: 13px; color: #334155; line-height: 1.45; }
 
     /* MODAL FORM NHẬP / SỬA HỒ SƠ */
     #patientModal {
@@ -262,7 +262,7 @@
       margin-bottom: 14px; font-size: 14.5px; font-weight: 700; color: var(--text);
     }
     .card-header .header-icon { font-size: 17px; }
-    .form-group { margin-bottom: 12px; }
+    .form-group { margin-bottom: 12px; width: 100%; }
     .form-group label {
       display: block; font-size: 12.5px; font-weight: 600;
       color: var(--text-muted); margin-bottom: 5px;
@@ -276,7 +276,17 @@
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
       border-color: var(--primary); background: #fff;
     }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    
+    /* BỐ CỤC 2 CỘT TÁCH BIỆT RÕ RÀNG TRÁNH CHỒNG LÊN NHAU TRÊN IPAD/TABLET */
+    .grid-row {
+      display: flex; gap: 14px; margin-bottom: 0;
+    }
+    .grid-col {
+      flex: 1; min-width: 0;
+    }
+    @media (max-width: 540px) {
+      .grid-row { flex-direction: column; gap: 0; }
+    }
 
     /* BẢNG CẬN LÂM SÀNG 6 CỘT CHỌN NGÀY */
     .table-scroll {
@@ -285,7 +295,7 @@
       background: #fff; margin-top: 6px;
     }
     .cls-table {
-      width: 100%; min-width: 820px;
+      width: 100%; min-width: 860px;
       border-collapse: collapse; font-size: 13px;
     }
     .cls-table th, .cls-table td {
@@ -296,7 +306,7 @@
       background: #f8fafc; font-weight: 700; color: var(--text); font-size: 12px;
     }
     .cls-table th.col-label {
-      width: 90px; text-align: left; padding-left: 8px;
+      width: 95px; text-align: left; padding-left: 8px;
       background: #f0fdfa; color: var(--primary-dark);
     }
     .cls-table th input.time-date-picker {
@@ -317,6 +327,14 @@
     }
     .cls-table td input:focus {
       background: #fff; border-color: var(--primary);
+    }
+    .cls-table td textarea {
+      width: 100%; min-height: 50px; padding: 4px; border: 1px solid #e2e8f0;
+      border-radius: 4px; font-size: 12px; font-family: inherit;
+      background: #fff; outline: none; resize: vertical;
+    }
+    .cls-table td textarea:focus {
+      border-color: var(--primary);
     }
 
     /* MODAL ĐỔI PIN */
@@ -445,28 +463,28 @@
       </div>
 
       <div class="modal-body">
-        <!-- HÀNH CHÍNH (NỮ MẶC ĐỊNH TRƯỚC NAM) -->
+        <!-- 1. HÀNH CHÍNH (ĐẢM BẢO Ô MÃ HỒ SƠ & NGÀY KHÁM KHÔNG CHỒNG NHAU) -->
         <div class="card">
           <div class="card-header">
             <span class="header-icon">📋</span>
             <span>Thông tin hành chính</span>
           </div>
-          <div class="grid-2">
-            <div class="form-group">
-              <label>Ngày khám:</label>
-              <input type="date" id="mNgayKham">
+          <div class="grid-row">
+            <div class="grid-col form-group">
+              <label>Ngày khám (*):</label>
+              <input type="date" id="mNgayKham" required>
             </div>
-            <div class="form-group">
-              <label>Mã hồ sơ:</label>
-              <input type="text" id="mMaHS" placeholder="VD: A001">
+            <div class="grid-col form-group">
+              <label>Mã hồ sơ (Mã BN tự tạo):</label>
+              <input type="text" id="mMaHS" placeholder="Tự sinh: TAN1991" required>
             </div>
           </div>
           <div class="form-group">
             <label>Họ và tên (*):</label>
-            <input type="text" id="mHoTen" placeholder="VD: Nguyễn Văn A" required>
+            <input type="text" id="mHoTen" placeholder="VD: Nguyễn Văn Tân" oninput="autoGeneratePatientCode()" required>
           </div>
-          <div class="grid-2">
-            <div class="form-group">
+          <div class="grid-row">
+            <div class="grid-col form-group">
               <label>Giới tính:</label>
               <select id="mGioiTinh">
                 <option value="Nữ" selected>Nữ</option>
@@ -474,24 +492,24 @@
                 <option value="Khác">Khác</option>
               </select>
             </div>
-            <div class="form-group">
-              <label>Năm sinh:</label>
-              <input type="number" id="mNamSinh" placeholder="1990">
+            <div class="grid-col form-group">
+              <label>Năm sinh (*):</label>
+              <input type="number" id="mNamSinh" placeholder="VD: 1991" oninput="autoGeneratePatientCode()">
             </div>
           </div>
-          <div class="grid-2">
-            <div class="form-group">
+          <div class="grid-row">
+            <div class="grid-col form-group">
               <label>Số điện thoại:</label>
               <input type="tel" id="mSdt" placeholder="0987654321" maxlength="10">
             </div>
-            <div class="form-group">
+            <div class="grid-col form-group">
               <label>Địa chỉ:</label>
               <input type="text" id="mDiaChi" placeholder="Tỉnh / Thành">
             </div>
           </div>
         </div>
 
-        <!-- BỆNH HỌC -->
+        <!-- 2. BỆNH HỌC -->
         <div class="card">
           <div class="card-header">
             <span class="header-icon">🩺</span>
@@ -509,7 +527,7 @@
           </div>
           <div class="form-group">
             <label>Chẩn đoán:</label>
-            <select style="margin-bottom: 6px;" onchange="appendSelectVal('mChanDoan', this)">
+            <select style="margin-bottom: 6px;" onchange="appendSelectVal('mChanDoan', this, ' / ')">
               <option value="">-- Chọn nhanh để thêm --</option>
               <option value="K giáp đã PT">K giáp đã PT</option>
               <option value="Basedow">Basedow</option>
@@ -517,11 +535,11 @@
               <option value="Suy giáp">Suy giáp</option>
               <option value="Viêm tuyến giáp">Viêm tuyến giáp</option>
             </select>
-            <textarea id="mChanDoan" rows="2" placeholder="Chẩn đoán bệnh lý..."></textarea>
+            <textarea id="mChanDoan" class="bullet-textarea" rows="2" placeholder="Chẩn đoán bệnh lý..."></textarea>
           </div>
         </div>
 
-        <!-- IOD PHÓNG XẠ (XUỐNG DÒNG NHIỀU DÒNG) -->
+        <!-- 3. IOD PHÓNG XẠ (XUỐNG DÒNG CÓ GẠCH ĐẦU DÒNG) -->
         <div class="card">
           <div class="card-header">
             <span class="header-icon">☢️</span>
@@ -529,18 +547,18 @@
           </div>
           <div class="form-group">
             <label>Có thể nhập nhiều dòng, ví dụ: 100 mCi (2022)</label>
-            <textarea id="mIodPhongXa" rows="3" placeholder="100 mCi (2022)&#10;80 mCi (2024)..."></textarea>
+            <textarea id="mIodPhongXa" class="bullet-textarea" rows="3" placeholder="- 100 mCi (2022)&#10;- 80 mCi (2024)..."></textarea>
           </div>
         </div>
 
-        <!-- THUỐC ĐIỀU TRỊ -->
+        <!-- 4. THUỐC ĐIỀU TRỊ -->
         <div class="card">
           <div class="card-header">
             <span class="header-icon">💊</span>
             <span>Thuốc điều trị (có thể chọn nhiều)</span>
           </div>
           <div class="form-group">
-            <select style="margin-bottom: 6px;" onchange="appendSelectVal('mThuocDieuTri', this)">
+            <select style="margin-bottom: 6px;" onchange="appendSelectVal('mThuocDieuTri', this, '\n- ')">
               <option value="">-- Chọn thuốc --</option>
               <option value="Levothyroxine 100mcg">Levothyroxine 100mcg</option>
               <option value="Zedcal">Zedcal</option>
@@ -552,11 +570,11 @@
               <option value="Atiferole">Atiferole</option>
               <option value="Anbaliv">Anbaliv</option>
             </select>
-            <textarea id="mThuocDieuTri" rows="3" placeholder="Danh sách thuốc sẽ hiện ở đây. Có thể sửa/bổ sung liều..."></textarea>
+            <textarea id="mThuocDieuTri" class="bullet-textarea" rows="3" placeholder="Danh sách thuốc sẽ hiện ở đây..."></textarea>
           </div>
         </div>
 
-        <!-- BẢNG THEO DÕI XÉT NGHIỆM CLS (6 CỘT CHỌN NGÀY) -->
+        <!-- 5. BẢNG THEO DÕI XÉT NGHIỆM CLS (6 CỘT CHỌN NGÀY & SIÊU ÂM XUỐNG DÒNG ĐƯỢC) -->
         <div class="card">
           <div class="card-header">
             <span class="header-icon">📊</span>
@@ -615,12 +633,12 @@
                 </tr>
                 <tr>
                   <td class="row-title">Siêu âm</td>
-                  <td><input type="text" id="c_sieuam_0" placeholder="KQ..."></td>
-                  <td><input type="text" id="c_sieuam_1" placeholder="KQ..."></td>
-                  <td><input type="text" id="c_sieuam_2" placeholder="KQ..."></td>
-                  <td><input type="text" id="c_sieuam_3" placeholder="KQ..."></td>
-                  <td><input type="text" id="c_sieuam_4" placeholder="KQ..."></td>
-                  <td><input type="text" id="c_sieuam_5" placeholder="KQ..."></td>
+                  <td><textarea id="c_sieuam_0" class="bullet-textarea" placeholder="Kết quả..."></textarea></td>
+                  <td><textarea id="c_sieuam_1" class="bullet-textarea" placeholder="Kết quả..."></textarea></td>
+                  <td><textarea id="c_sieuam_2" class="bullet-textarea" placeholder="Kết quả..."></textarea></td>
+                  <td><textarea id="c_sieuam_3" class="bullet-textarea" placeholder="Kết quả..."></textarea></td>
+                  <td><textarea id="c_sieuam_4" class="bullet-textarea" placeholder="Kết quả..."></textarea></td>
+                  <td><textarea id="c_sieuam_5" class="bullet-textarea" placeholder="Kết quả..."></textarea></td>
                 </tr>
               </tbody>
             </table>
@@ -630,14 +648,14 @@
           </div>
         </div>
 
-        <!-- GHI CHÚ KHÁC -->
+        <!-- 6. GHI CHÚ KHÁC -->
         <div class="card">
           <div class="card-header">
             <span class="header-icon">📝</span>
             <span>Ghi chú khác</span>
           </div>
           <div class="form-group">
-            <textarea id="mKhac" rows="2" placeholder="Ghi chú lâm sàng, lời dặn bác sĩ..."></textarea>
+            <textarea id="mKhac" class="bullet-textarea" rows="2" placeholder="Ghi chú lâm sàng, lời dặn bác sĩ..."></textarea>
           </div>
         </div>
       </div>
@@ -675,8 +693,8 @@
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwk06j1_EJtjJzbNZhNRDrtJIF6fGa22ZUY1bsW73tgMmD9gqJbBd8kyPkKYzwMoUMvjA/exec";
     
-    // MÃ PIN MẶC ĐỊNH MỚI
-    const DEFAULT_PIN = "190590";
+    // MÃ PIN MẶC ĐỊNH MỚI: 123456
+    const DEFAULT_PIN = "123456";
 
     let patientList = [];
     let currentEditingIndex = -1;
@@ -685,7 +703,7 @@
       return localStorage.getItem("app_pin_custom") || DEFAULT_PIN;
     }
 
-    // Tự động kiểm tra mở khóa khi nhập đủ 6 số
+    // Tự động mở khóa khi gõ đủ 6 số
     document.getElementById("pinInput").addEventListener("input", function(e) {
       document.getElementById("authErrorMsg").innerText = "";
       if (this.value.length === 6) {
@@ -699,7 +717,6 @@
 
       const currentPin = getValidPin();
 
-      // Chấp nhận mã 190590 hoặc mã người dùng đã chủ động đổi
       if (pinVal === DEFAULT_PIN || pinVal === currentPin) {
         sessionStorage.setItem("active_pin_session", pinVal);
         document.getElementById("lockScreen").style.display = "none";
@@ -731,7 +748,7 @@
       setTimeout(() => { toast.style.display = "none"; }, duration);
     }
 
-    // ĐỔI MÃ PIN TRÊN GIAO DIỆN
+    // ĐỔI MÃ PIN TRÊN GIAO DIỆN APP
     function openChangePinModal() {
       document.getElementById("pinModal").style.display = "flex";
       document.getElementById("oldPinInput").value = "";
@@ -766,11 +783,103 @@
       msg.innerText = "Đổi mã PIN thành công!";
       setTimeout(() => {
         closeChangePinModal();
-        showToast("✅ Đã cập nhật mã PIN mới");
+        showToast("✅ Đã cập nhật mã PIN mới: " + newP);
       }, 1000);
     }
 
-    // ĐỒNG BỘ DỮ LIỆU
+    // TỰ ĐỘNG THÊM GẠCH ĐẦU DÒNG KHI XUỐNG DÒNG (ENTER) TRONG TEXTAREA
+    document.addEventListener("keydown", function(e) {
+      if (e.target && e.target.classList.contains("bullet-textarea") && e.key === "Enter") {
+        e.preventDefault();
+        const textarea = e.target;
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const value = textarea.value;
+
+        if (value.trim() === "") {
+          textarea.value = "- ";
+          textarea.selectionStart = textarea.selectionEnd = 2;
+          return;
+        }
+
+        const insertText = "\n- ";
+        textarea.value = value.substring(0, start) + insertText + value.substring(end);
+        textarea.selectionStart = textarea.selectionEnd = start + insertText.length;
+      }
+    });
+
+    // Khi người dùng chạm vào ô văn bản trống, tự động thêm dấu gạch đầu tiên
+    document.addEventListener("focusin", function(e) {
+      if (e.target && e.target.classList.contains("bullet-textarea")) {
+        const textarea = e.target;
+        if (textarea.id !== "mChanDoan" && textarea.value.trim() === "") {
+          textarea.value = "- ";
+        }
+      }
+    });
+
+    // XỬ LÝ CHẨN ĐOÁN CÓ DẤU " / " GIỮA CÁC CHẨN ĐOÁN
+    function formatDiagnosis(diagText) {
+      if (!diagText) return "---";
+      const parts = diagText.split(/[\n\/]+/)
+        .map(s => s.replace(/^[-•\s]+/, '').trim())
+        .filter(s => s.length > 0);
+      return parts.length > 0 ? parts.join(" / ") : "---";
+    }
+
+    // HÀM TẠO MÃ BỆNH NHÂN TỰ ĐỘNG (Tên ko dấu + Năm sinh; trùng thì thêm -1, -2...)
+    function removeVietnameseTones(str) {
+      str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+      str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+      str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+      str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+      str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+      str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+      str = str.replace(/đ/g, "d");
+      str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
+      str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
+      str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
+      str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
+      str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
+      str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
+      str = str.replace(/Đ/g, "D");
+      return str;
+    }
+
+    function autoGeneratePatientCode() {
+      if (currentEditingIndex !== -1 && document.getElementById("mMaHS").value.trim() !== "") {
+        return;
+      }
+
+      const hoTen = document.getElementById("mHoTen").value.trim();
+      const namSinh = document.getElementById("mNamSinh").value.trim();
+
+      if (!hoTen || !namSinh) return;
+
+      const parts = hoTen.split(/\s+/);
+      const firstName = parts[parts.length - 1];
+      const cleanName = removeVietnameseTones(firstName).toUpperCase().replace(/[^A-Z0-9]/g, "");
+
+      if (!cleanName) return;
+
+      const baseCode = cleanName + namSinh; // Ví dụ: TAN1991
+
+      let candidate = baseCode;
+      let counter = 1;
+
+      const existingCodes = patientList
+        .filter((_, idx) => idx !== currentEditingIndex)
+        .map(p => (p.maHS || "").toUpperCase());
+
+      while (existingCodes.includes(candidate.toUpperCase())) {
+        candidate = `${baseCode}-${counter}`;
+        counter++;
+      }
+
+      document.getElementById("mMaHS").value = candidate;
+    }
+
+    // ĐỒNG BỘ DỮ LIỆU GOOGLE SHEETS
     function loadCachedData() {
       const cached = localStorage.getItem("app_patients_cache");
       if (cached) {
@@ -784,8 +893,7 @@
     async function loadFromSheets(isSilent = false) {
       if (!isSilent) showToast("⏳ Đang đồng bộ từ Google Sheets...");
       try {
-        const currentPin = sessionStorage.getItem("active_pin_session") || DEFAULT_PIN;
-        const res = await fetch(`${SCRIPT_URL}?pass=${encodeURIComponent(currentPin)}`);
+        const res = await fetch(SCRIPT_URL);
         const json = await res.json();
         if (json.status === "success" && Array.isArray(json.data)) {
           patientList = json.data.map((p, i) => {
@@ -794,10 +902,13 @@
               if (p.clsTableJson) clsData = JSON.parse(p.clsTableJson);
             } catch(e) {}
 
+            let nk = p.ngayKham || "";
+            if (nk.includes("T")) nk = nk.split("T")[0];
+
             return {
               stt: i + 1,
-              maHS: p.maHS || ("A" + String(i + 1).padStart(3, '0')),
-              ngayKham: p.ngayKham || "",
+              maHS: p.maHS || "",
+              ngayKham: nk,
               hoTen: p.hoTen || "",
               gioiTinh: p.gioiTinh || "Nữ",
               namSinh: p.namSinh || "",
@@ -821,7 +932,7 @@
       }
     }
 
-    // HIỂN THỊ DANH SÁCH BỆNH NHÂN
+    // HIỂN THỊ DANH SÁCH BỆNH NHÂN (GIAO DIỆN 1)
     function renderPatients() {
       const key = document.getElementById("patientSearch").value.toLowerCase().trim();
       const container = document.getElementById("patientListContainer");
@@ -855,10 +966,10 @@
           </div>
           <div class="pi-meta">
             ${p.maHS ? p.maHS + ' • ' : ''}${p.gioiTinh || ''} • ${p.namSinh || '---'}<br>
-            Ngày khám: ${p.ngayKham || '---'} ${p.sdt ? '• SĐT: ' + p.sdt : ''}
+            Ngày khám: <b>${p.ngayKham || '---'}</b> ${p.sdt ? '• SĐT: ' + p.sdt : ''}
           </div>
           <div class="pi-diag">
-            <b>Chẩn đoán:</b> ${p.chanDoan || '---'}
+            <b>Chẩn đoán:</b> ${formatDiagnosis(p.chanDoan)}
           </div>
         `;
         container.appendChild(card);
@@ -873,8 +984,8 @@
       clearModalForm();
 
       document.getElementById("mNgayKham").valueAsDate = new Date();
-      document.getElementById("mGioiTinh").value = "Nữ"; // Mặc định Nữ
-      document.getElementById("mMaHS").value = "A" + String(patientList.length + 1).padStart(3, '0');
+      document.getElementById("mGioiTinh").value = "Nữ";
+      document.getElementById("mMaHS").value = "";
       document.getElementById("patientModal").style.display = "flex";
     }
 
@@ -884,7 +995,10 @@
       document.getElementById("modalHeading").innerText = "Xem & Sửa hồ sơ";
       document.getElementById("btnDeletePatient").style.display = "block";
 
-      document.getElementById("mNgayKham").value = p.ngayKham || "";
+      let nk = p.ngayKham || "";
+      if (nk.includes("T")) nk = nk.split("T")[0];
+
+      document.getElementById("mNgayKham").value = nk;
       document.getElementById("mMaHS").value = p.maHS || "";
       document.getElementById("mHoTen").value = p.hoTen || "";
       document.getElementById("mGioiTinh").value = p.gioiTinh || "Nữ";
@@ -897,11 +1011,12 @@
       document.getElementById("mThuocDieuTri").value = p.thuocDieuTri || "";
       document.getElementById("mKhac").value = p.khac || "";
 
-      // Điền dữ liệu bảng xét nghiệm 6 thời điểm
       const cls = p.cls || {};
       const dates = cls.dates || [];
       for (let i = 0; i < 6; i++) {
-        document.getElementById(`tDate${i}`).value = dates[i] || "";
+        let dt = dates[i] || "";
+        if (dt.includes("T")) dt = dt.split("T")[0];
+        document.getElementById(`tDate${i}`).value = dt;
         document.getElementById(`c_ft4_${i}`).value = (cls.ft4 && cls.ft4[i]) || "";
         document.getElementById(`c_tsh_${i}`).value = (cls.tsh && cls.tsh[i]) || "";
         document.getElementById(`c_tg_${i}`).value = (cls.tg && cls.tg[i]) || "";
@@ -920,29 +1035,67 @@
       document.querySelectorAll("#patientModal input, #patientModal textarea").forEach(el => el.value = "");
     }
 
-    function appendSelectVal(targetId, selectEl) {
+    function appendSelectVal(targetId, selectEl, separator = "\n- ") {
       if (!selectEl.value) return;
       const target = document.getElementById(targetId);
-      target.value = target.value.trim() === "" ? selectEl.value : target.value + "\n" + selectEl.value;
+      const val = selectEl.value;
+
+      if (targetId === "mChanDoan") {
+        if (target.value.trim() === "") {
+          target.value = val;
+        } else {
+          target.value = target.value.trim() + " / " + val;
+        }
+      } else {
+        if (target.value.trim() === "") {
+          target.value = "- " + val;
+        } else {
+          target.value = target.value.trim() + "\n- " + val;
+        }
+      }
+
       selectEl.value = "";
       target.focus();
     }
 
-    // LƯU HỒ SƠ VÀO GOOGLE SHEETS
+    // LƯU HỒ SƠ
     async function savePatientModal() {
+      const ngayKham = document.getElementById("mNgayKham").value;
+      const maHS = document.getElementById("mMaHS").value.trim().toUpperCase();
       const hoTen = document.getElementById("mHoTen").value.trim();
       const sdt = document.getElementById("mSdt").value.trim();
 
+      if (!ngayKham) {
+        alert("Vui lòng chọn Ngày khám!");
+        return;
+      }
       if (!hoTen) {
         alert("Vui lòng nhập Họ và tên bệnh nhân!");
         return;
       }
+      if (!maHS) {
+        alert("Vui lòng nhập hoặc kiểm tra Mã hồ sơ!");
+        return;
+      }
+
+      // KIỂM TRA TRÙNG CẢ MÃ HỒ SƠ VÀ NGÀY KHÁM
+      const isDuplicate = patientList.some((p, idx) => {
+        if (idx === currentEditingIndex) return false;
+        let pDate = p.ngayKham || "";
+        if (pDate.includes("T")) pDate = pDate.split("T")[0];
+        return (p.maHS || "").toUpperCase() === maHS && pDate === ngayKham;
+      });
+
+      if (isDuplicate) {
+        alert(`Bệnh nhân có Mã [${maHS}] đã có hồ sơ trong ngày [${ngayKham}]! Vui lòng kiểm tra lại ngày khám hoặc mã hồ sơ.`);
+        return;
+      }
+
       if (sdt && !/^[0-9]{10}$/.test(sdt)) {
         alert("Số điện thoại phải đúng 10 chữ số!");
         return;
       }
 
-      // Thu thập dữ liệu bảng CLS 6 cột ngày
       const clsData = {
         dates: [],
         ft4: [],
@@ -962,8 +1115,8 @@
 
       const patientData = {
         stt: currentEditingIndex === -1 ? patientList.length + 1 : patientList[currentEditingIndex].stt,
-        maHS: document.getElementById("mMaHS").value.trim(),
-        ngayKham: document.getElementById("mNgayKham").value,
+        maHS: maHS,
+        ngayKham: ngayKham,
         hoTen: hoTen,
         gioiTinh: document.getElementById("mGioiTinh").value,
         namSinh: document.getElementById("mNamSinh").value,
@@ -990,14 +1143,12 @@
       showToast("💾 Đang lưu lên đám mây...");
 
       try {
-        const currentPin = sessionStorage.getItem("active_pin_session") || DEFAULT_PIN;
         const actionType = currentEditingIndex === -1 ? "ADD" : "UPDATE";
         fetch(SCRIPT_URL, {
           method: "POST",
           mode: "no-cors",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({
-            pass: currentPin,
             action: actionType,
             index: currentEditingIndex === -1 ? 0 : currentEditingIndex,
             data: patientData
@@ -1012,7 +1163,7 @@
     function deleteCurrentPatient() {
       if (currentEditingIndex === -1) return;
       const p = patientList[currentEditingIndex];
-      if (confirm(`Bạn có chắc chắn muốn xóa hồ sơ: ${p.hoTen}?`)) {
+      if (confirm(`Bạn có chắc chắn muốn xóa hồ sơ: ${p.hoTen} (${p.maHS})?`)) {
         const delIdx = currentEditingIndex;
         patientList.splice(delIdx, 1);
         patientList.forEach((item, idx) => item.stt = idx + 1);
@@ -1023,13 +1174,11 @@
         showToast("🗑️ Đang xóa hồ sơ...");
 
         try {
-          const currentPin = sessionStorage.getItem("active_pin_session") || DEFAULT_PIN;
           fetch(SCRIPT_URL, {
             method: "POST",
             mode: "no-cors",
             headers: { "Content-Type": "text/plain;charset=utf-8" },
             body: JSON.stringify({
-              pass: currentPin,
               action: "DELETE",
               index: delIdx
             })
@@ -1048,7 +1197,7 @@
       }
 
       const headers = [
-        ["STT", "Mã HS", "Ngày khám", "Họ và tên", "Giới tính", "Năm sinh", "SĐT", "Địa chỉ", "Giải phẫu bệnh", "Chẩn đoán", "Tiền sử Iod phóng xạ", "Thuốc điều trị", "FT4 (Gần nhất)", "TSH (Gần nhất)", "Tg (Gần nhất)", "TRAb (Gần nhất)", "Siêu âm", "Ghi chú khác"]
+        ["STT", "Mã HS", "Ngày khám", "Họ và tên", "Giới tính", "Năm sinh", "SĐT", "Địa chỉ", "Giải phẫu bệnh", "Chẩn đoán", "Tiền sử Iod phóng xạ", "Thuốc điều trị", "FT4 (Gần nhất)", "TSH (Gần nhất)", "Tg (Gần nhất)", "TRAb (Gần nhất)", "Siêu âm (Gần nhất)", "Ghi chú khác"]
       ];
 
       const rows = patientList.map(p => {
@@ -1064,7 +1213,7 @@
           p.sdt ? "'" + p.sdt : "",
           p.diaChi || "",
           p.giaiPhauBenh || "",
-          p.chanDoan || "",
+          formatDiagnosis(p.chanDoan),
           p.iodPhongXa || "",
           p.thuocDieuTri || "",
           getLatest(cls.ft4),
