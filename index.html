@@ -904,7 +904,7 @@
       msg.innerText = "Đổi mật khẩu thành công!";
       setTimeout(() => {
         closeChangePinModal();
-        showToast("✅ Đã đổi mật khẩu thành công!");
+        showToast("✅ Đã đổi mật khẩu máy cá nhân thành: " + newP);
       }, 1000);
     }
 
@@ -927,7 +927,7 @@
         closeSyncPrompt();
         executeSyncDownFromSheet();
       } else {
-        document.getElementById("syncPromptMsg").innerText = "Mã PIN không đúng!";
+        document.getElementById("syncPromptMsg").innerText = "Mật khẩu không đúng!";
         document.getElementById("syncPinInput").value = "";
         document.getElementById("syncPinInput").focus();
       }
@@ -1077,7 +1077,7 @@
       }
     }
 
-    // GỬI LỆNH BỔ SUNG / CẬP NHẬT 1 BỆNH NHÂN LÊN SHEET
+    // GỬI LỆNH BỔ SUNG / CẬP NHẬT 1 BỆNH NHÂN (KHÔNG XOÁ CÁC BỆNH NHÂN KHÁC)
     async function sendSavePatientToSheet(patient) {
       try {
         fetch(SCRIPT_URL, {
@@ -1095,74 +1095,56 @@
       }
     }
 
-    // ĐỒNG BỘ + XOÁ DỮ LIỆU TRÊN THIẾT BỊ
-    // QUAN TRỌNG: Không dùng action "SYNC_ALL" vì backend có thể xoá/ghi lại toàn bộ Sheet.
-    // Thay vào đó, gửi TỪNG hồ sơ bằng "SAVE_PATIENT" (cùng cơ chế với nút Lưu hồ sơ).
-    // SAVE_PATIENT có nhiệm vụ bổ sung hoặc cập nhật đúng hồ sơ, không xoá các dòng cũ khác.
+    // GỬI LỆNH XOÁ ĐÚNG 1 BỆNH NHÂN TRÊN SHEET
+    async function sendDeletePatientToSheet(patient) {
+      try {
+        fetch(SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            auth: TARGET_AUTH_HASH,
+            action: "DELETE_PATIENT",
+            patient: patient
+          })
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // XOÁ TOÀN BỘ DỮ LIỆU TRÊN MÁY (ĐỒNG BỘ GỘP LÊN SHEET TRƯỚC RỒI MỚI XOÁ MÁY)
     async function confirmDeleteAllData() {
       if (patientList.length === 0) {
         alert("Hiện không có hồ sơ nào trên máy!");
         return;
       }
 
-      if (!confirm(
-        "Hệ thống sẽ gửi từng hồ sơ trên máy lên Google Sheet bằng chế độ BỔ SUNG/CẬP NHẬT, " +
-        "KHÔNG xoá dữ liệu cũ trên Sheet. Sau khi gửi xong mới xoá dữ liệu trên thiết bị. Bạn có chắc chắn không?"
-      )) {
+      if (!confirm("Ứng dụng sẽ đồng bộ tất cả hồ sơ lên Google Sheet để lưu trữ, sau đó XOÁ SẠCH dữ liệu trên máy này. Bạn có chắc chắn không?")) {
         return;
       }
 
-      const dataToSync = [...patientList];
-
-      showToast(`⏳ Đang đồng bộ 0/${dataToSync.length} hồ sơ...`, 60000);
+      sortPatientsByDate();
+      showToast("⏳ Đang đồng bộ lưu trữ lên Google Sheet...");
 
       try {
-        for (let i = 0; i < dataToSync.length; i++) {
-          const patient = dataToSync[i];
+        await fetch(SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            auth: TARGET_AUTH_HASH,
+            action: "SYNC_ALL",
+            data: patientList
+          })
+        });
 
-          await fetch(SCRIPT_URL, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify({
-              auth: TARGET_AUTH_HASH,
-              action: "SAVE_PATIENT",
-              patient: patient
-            })
-          });
-
-          showToast(`⏳ Đang đồng bộ ${i + 1}/${dataToSync.length} hồ sơ...`, 60000);
-
-          // Nghỉ rất ngắn để tránh gửi quá dồn dập tới Google Apps Script.
-          if (i < dataToSync.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 120));
-          }
-        }
-
-        // Chỉ xoá dữ liệu LOCAL sau khi đã gửi hết lên Sheet.
         patientList = [];
         localStorage.removeItem("app_patients_cache");
         renderPatients();
-
-        showToast("✅ Đã đồng bộ xong — dữ liệu cũ trên Google Sheet được giữ nguyên!", 3500);
-        alert(
-          `✅ Đã đồng bộ ${dataToSync.length} hồ sơ lên Google Sheet.\n\n` +
-          "Các hồ sơ được gửi theo chế độ BỔ SUNG/CẬP NHẬT và không dùng lệnh xoá toàn bộ Sheet.\n" +
-          "Dữ liệu trên thiết bị đã được xoá."
-        );
-      } catch (err) {
-        console.error("Lỗi đồng bộ trước khi xoá local:", err);
-
-        // Tuyệt đối KHÔNG xoá local nếu quá trình gửi gặp lỗi.
-        localStorage.setItem("app_patients_cache", JSON.stringify(patientList));
-        renderPatients();
-
-        showToast("❌ Đồng bộ lỗi — dữ liệu trên máy vẫn được giữ nguyên!", 4000);
-        alert(
-          "❌ Không thể hoàn tất đồng bộ.\n\n" +
-          "Dữ liệu trên thiết bị CHƯA bị xoá để tránh mất hồ sơ.\n" +
-          "Vui lòng kiểm tra kết nối rồi thực hiện lại."
-        );
+        alert("✅ Đã đồng bộ an toàn lên Google Sheet và xoá toàn bộ dữ liệu trên thiết bị này!\nKhi cần xem lại, bấm 'Đồng bộ dữ liệu' và nhập mật khẩu.");
+      } catch(err) {
+        alert("❌ Lỗi khi gửi dữ liệu lên Google Sheet!");
       }
     }
 
@@ -1219,8 +1201,7 @@
       document.getElementById("btnDeletePatient").style.display = "none";
       clearModalForm();
 
-      const todayStr = new Date().toISOString().slice(0, 10);
-      document.getElementById("mNgayKham").value = todayStr;
+      document.getElementById("mNgayKham").valueAsDate = new Date();
       document.getElementById("mGioiTinh").value = "Nữ";
       document.getElementById("mMaHS").value = "";
       document.getElementById("patientModal").style.display = "flex";
@@ -1344,21 +1325,25 @@
       closePatientModal();
 
       showToast("💾 Đang bổ sung hồ sơ lên Google Sheet...");
+      // GỬI BỔ SUNG ĐÚNG HỒ SƠ NÀY LÊN GOOGLE SHEET (KHÔNG XOÁ CÁC HỒ SƠ CŨ)
       await sendSavePatientToSheet(patientData);
       showToast("✅ Đã bổ sung thành công lên Google Sheet!");
     }
 
-    // XOÁ HỒ SƠ CHỈ TRÊN THIẾT BỊ NÀY, KHÔNG CAN THIỆP GÌ VÀO GOOGLE SHEET
-    function deleteCurrentPatient() {
+    async function deleteCurrentPatient() {
       if (currentEditingIndex === -1) return;
       const p = patientList[currentEditingIndex];
-      if (confirm(`Bạn có chắc chắn muốn xóa hồ sơ: ${p.hoTen} (${p.maHS}) khỏi thiết bị này?`)) {
+      if (confirm(`Bạn có chắc chắn muốn xóa hồ sơ: ${p.hoTen} (${p.maHS})?`)) {
+        const deletedPatient = { ...p };
         patientList.splice(currentEditingIndex, 1);
         sortPatientsByDate();
         localStorage.setItem("app_patients_cache", JSON.stringify(patientList));
         renderPatients();
         closePatientModal();
-        showToast("🗑️ Đã xóa hồ sơ trên thiết bị!");
+
+        showToast("🗑️ Đang đồng bộ xóa trên Google Sheet...");
+        await sendDeletePatientToSheet(deletedPatient);
+        showToast("✅ Đã xóa hồ sơ!");
       }
     }
 
