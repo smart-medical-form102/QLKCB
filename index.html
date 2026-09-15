@@ -904,7 +904,7 @@
       msg.innerText = "Đổi mật khẩu thành công!";
       setTimeout(() => {
         closeChangePinModal();
-        showToast("✅ Đã đổi mật khẩu máy cá nhân thành: " + newP);
+        showToast("✅ Đã đổi mật khẩu thành công!");
       }, 1000);
     }
 
@@ -927,7 +927,7 @@
         closeSyncPrompt();
         executeSyncDownFromSheet();
       } else {
-        document.getElementById("syncPromptMsg").innerText = "Mật khẩu không đúng!";
+        document.getElementById("syncPromptMsg").innerText = "Mã PIN không đúng!";
         document.getElementById("syncPinInput").value = "";
         document.getElementById("syncPinInput").focus();
       }
@@ -1077,7 +1077,7 @@
       }
     }
 
-    // GỬI LỆNH BỔ SUNG / CẬP NHẬT 1 BỆNH NHÂN (KHÔNG XOÁ CÁC BỆNH NHÂN KHÁC)
+    // GỬI LỆNH BỔ SUNG / CẬP NHẬT 1 BỆNH NHÂN LÊN SHEET
     async function sendSavePatientToSheet(patient) {
       try {
         fetch(SCRIPT_URL, {
@@ -1095,54 +1095,37 @@
       }
     }
 
-    // GỬI LỆNH XOÁ ĐÚNG 1 BỆNH NHÂN TRÊN SHEET
-    async function sendDeletePatientToSheet(patient) {
-      try {
-        fetch(SCRIPT_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({
-            auth: TARGET_AUTH_HASH,
-            action: "DELETE_PATIENT",
-            patient: patient
-          })
-        });
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
-    // XOÁ TOÀN BỘ DỮ LIỆU TRÊN MÁY (ĐỒNG BỘ GỘP LÊN SHEET TRƯỚC RỒI MỚI XOÁ MÁY)
+    // GỬI LỆNH BỔ SUNG TOÀN BỘ HỒ SƠ LÊN SHEET KHI BẤM "XOÁ TOÀN BỘ DỮ LIỆU"
     async function confirmDeleteAllData() {
       if (patientList.length === 0) {
         alert("Hiện không có hồ sơ nào trên máy!");
         return;
       }
 
-      if (!confirm("Ứng dụng sẽ đồng bộ tất cả hồ sơ lên Google Sheet để lưu trữ, sau đó XOÁ SẠCH dữ liệu trên máy này. Bạn có chắc chắn không?")) {
+      if (!confirm("Hệ thống sẽ đồng bộ và bổ sung tất cả hồ sơ này lên Google Sheet (không làm mất dữ liệu cũ trên Sheet), sau đó mới xoá sạch bộ nhớ trên thiết bị này. Bạn có chắc chắn không?")) {
         return;
       }
 
-      sortPatientsByDate();
-      showToast("⏳ Đang đồng bộ lưu trữ lên Google Sheet...");
+      showToast("⏳ Đang đồng bộ bổ sung lên Google Sheet...");
 
       try {
-        await fetch(SCRIPT_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({
-            auth: TARGET_AUTH_HASH,
-            action: "SYNC_ALL",
-            data: patientList
-          })
-        });
+        for (const p of patientList) {
+          await fetch(SCRIPT_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({
+              auth: TARGET_AUTH_HASH,
+              action: "SAVE_PATIENT",
+              patient: p
+            })
+          });
+        }
 
         patientList = [];
         localStorage.removeItem("app_patients_cache");
         renderPatients();
-        alert("✅ Đã đồng bộ an toàn lên Google Sheet và xoá toàn bộ dữ liệu trên thiết bị này!\nKhi cần xem lại, bấm 'Đồng bộ dữ liệu' và nhập mật khẩu.");
+        alert("✅ Đã đồng bộ và bổ sung toàn bộ hồ sơ lên Google Sheet an toàn (dữ liệu cũ trên Sheet được giữ nguyên), đồng thời đã dọn sạch bộ nhớ trên máy!");
       } catch(err) {
         alert("❌ Lỗi khi gửi dữ liệu lên Google Sheet!");
       }
@@ -1201,7 +1184,8 @@
       document.getElementById("btnDeletePatient").style.display = "none";
       clearModalForm();
 
-      document.getElementById("mNgayKham").valueAsDate = new Date();
+      const todayStr = new Date().toISOString().slice(0, 10);
+      document.getElementById("mNgayKham").value = todayStr;
       document.getElementById("mGioiTinh").value = "Nữ";
       document.getElementById("mMaHS").value = "";
       document.getElementById("patientModal").style.display = "flex";
@@ -1325,25 +1309,21 @@
       closePatientModal();
 
       showToast("💾 Đang bổ sung hồ sơ lên Google Sheet...");
-      // GỬI BỔ SUNG ĐÚNG HỒ SƠ NÀY LÊN GOOGLE SHEET (KHÔNG XOÁ CÁC HỒ SƠ CŨ)
       await sendSavePatientToSheet(patientData);
       showToast("✅ Đã bổ sung thành công lên Google Sheet!");
     }
 
-    async function deleteCurrentPatient() {
+    // XOÁ HỒ SƠ CHỈ TRÊN THIẾT BỊ NÀY, KHÔNG CAN THIỆP GÌ VÀO GOOGLE SHEET
+    function deleteCurrentPatient() {
       if (currentEditingIndex === -1) return;
       const p = patientList[currentEditingIndex];
-      if (confirm(`Bạn có chắc chắn muốn xóa hồ sơ: ${p.hoTen} (${p.maHS})?`)) {
-        const deletedPatient = { ...p };
+      if (confirm(`Bạn có chắc chắn muốn xóa hồ sơ: ${p.hoTen} (${p.maHS}) khỏi thiết bị này?`)) {
         patientList.splice(currentEditingIndex, 1);
         sortPatientsByDate();
         localStorage.setItem("app_patients_cache", JSON.stringify(patientList));
         renderPatients();
         closePatientModal();
-
-        showToast("🗑️ Đang đồng bộ xóa trên Google Sheet...");
-        await sendDeletePatientToSheet(deletedPatient);
-        showToast("✅ Đã xóa hồ sơ!");
+        showToast("🗑️ Đã xóa hồ sơ trên thiết bị!");
       }
     }
 
