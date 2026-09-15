@@ -1102,30 +1102,28 @@
         return;
       }
 
-      if (!confirm("Hệ thống sẽ đồng bộ và bổ sung tất cả hồ sơ này lên Google Sheet (không làm mất dữ liệu cũ trên Sheet), sau đó mới xoá sạch bộ nhớ trên thiết bị này. Bạn có chắc chắn không?")) {
+      if (!confirm("Hệ thống sẽ đồng bộ và gộp tất cả hồ sơ này lên Google Sheet (giữ nguyên dữ liệu cũ trên Sheet), sau đó mới xoá sạch bộ nhớ trên thiết bị này. Bạn có chắc chắn không?")) {
         return;
       }
 
-      showToast("⏳ Đang đồng bộ bổ sung lên Google Sheet...");
+      showToast("⏳ Đang đồng bộ gộp lên Google Sheet...");
 
       try {
-        for (const p of patientList) {
-          await fetch(SCRIPT_URL, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify({
-              auth: TARGET_AUTH_HASH,
-              action: "SAVE_PATIENT",
-              patient: p
-            })
-          });
-        }
+        await fetch(SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            auth: TARGET_AUTH_HASH,
+            action: "SYNC_ALL",
+            data: patientList
+          })
+        });
 
         patientList = [];
         localStorage.removeItem("app_patients_cache");
         renderPatients();
-        alert("✅ Đã đồng bộ và bổ sung toàn bộ hồ sơ lên Google Sheet an toàn (dữ liệu cũ trên Sheet được giữ nguyên), đồng thời đã dọn sạch bộ nhớ trên máy!");
+        alert("✅ Đã đồng bộ gộp hồ sơ lên Google Sheet thành công (dữ liệu cũ được giữ nguyên), đồng thời đã dọn sạch bộ nhớ trên máy!");
       } catch(err) {
         alert("❌ Lỗi khi gửi dữ liệu lên Google Sheet!");
       }
