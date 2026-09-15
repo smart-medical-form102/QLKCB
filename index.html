@@ -1077,7 +1077,7 @@
       }
     }
 
-    // GỬI LỆNH BỔ SUNG / CẬP NHẬT 1 BỆNH NHÂN LÊN SHEET
+    // GỬI LỆNH BỔ SUNG / CẬP NHẬT 1 BỆNH NHÂN (KHÔNG XOÁ CÁC BỆNH NHÂN KHÁC)
     async function sendSavePatientToSheet(patient) {
       try {
         fetch(SCRIPT_URL, {
@@ -1095,17 +1095,255 @@
       }
     }
 
-    // XOÁ BỆNH NHÂN TRÊN MÁY (KHÔNG CAN THIỆP GÌ VÀO GOOGLE SHEET)
-    function deleteCurrentPatient() {
+    // GỬI LỆNH XOÁ ĐÚNG 1 BỆNH NHÂN TRÊN SHEET
+    async function sendDeletePatientToSheet(patient) {
+      try {
+        fetch(SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            auth: TARGET_AUTH_HASH,
+            action: "DELETE_PATIENT",
+            patient: patient
+          })
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // XOÁ TOÀN BỘ DỮ LIỆU TRÊN MÁY (ĐỒNG BỘ GỘP LÊN SHEET TRƯỚC RỒI MỚI XOÁ MÁY)
+    async function confirmDeleteAllData() {
+      if (patientList.length === 0) {
+        alert("Hiện không có hồ sơ nào trên máy!");
+        return;
+      }
+
+      if (!confirm("Ứng dụng sẽ đồng bộ tất cả hồ sơ lên Google Sheet để lưu trữ, sau đó XOÁ SẠCH dữ liệu trên máy này. Bạn có chắc chắn không?")) {
+        return;
+      }
+
+      sortPatientsByDate();
+      showToast("⏳ Đang đồng bộ lưu trữ lên Google Sheet...");
+
+      try {
+        await fetch(SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            auth: TARGET_AUTH_HASH,
+            action: "SYNC_ALL",
+            data: patientList
+          })
+        });
+
+        patientList = [];
+        localStorage.removeItem("app_patients_cache");
+        renderPatients();
+        alert("✅ Đã đồng bộ an toàn lên Google Sheet và xoá toàn bộ dữ liệu trên thiết bị này!\nKhi cần xem lại, bấm 'Đồng bộ dữ liệu' và nhập mật khẩu.");
+      } catch(err) {
+        alert("❌ Lỗi khi gửi dữ liệu lên Google Sheet!");
+      }
+    }
+
+    function renderPatients() {
+      const key = document.getElementById("patientSearch").value.toLowerCase().trim();
+      const container = document.getElementById("patientListContainer");
+      container.innerHTML = "";
+
+      const filtered = patientList.filter(p => {
+        const full = `${p.hoTen} ${p.maHS} ${p.sdt} ${p.chanDoan} ${p.diaChi}`.toLowerCase();
+        return full.includes(key);
+      });
+
+      document.getElementById("recordCountLabel").innerText = `${filtered.length} hồ sơ`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div style="text-align:center; padding: 40px 20px; color: var(--text-muted);">
+            <p style="font-size:32px; margin:0 0 8px 0;">📂</p>
+            <div style="font-weight:600;">Không có hồ sơ lưu trên máy</div>
+            <div style="font-size:12px; margin-top:4px;">Bấm "Đồng bộ dữ liệu" hoặc "+ Thêm bệnh nhân mới"</div>
+          </div>`;
+        return;
+      }
+
+      filtered.forEach((p, idx) => {
+        const originalIndex = patientList.indexOf(p);
+        const card = document.createElement("div");
+        card.className = "patient-item";
+        card.innerHTML = `
+          <div class="pi-header">
+            <div class="pi-name">${p.stt} - ${p.hoTen || "Chưa có tên"}</div>
+            
+            <button class="btn-split-action" onclick="openEditModal(${originalIndex})" title="Xem và sửa hồ sơ">
+              <span class="part-xem">Xem</span>
+              <span class="part-sua">Sửa</span>
+            </button>
+          </div>
+          <div class="pi-meta">
+            ${p.maHS ? p.maHS + ' • ' : ''}${p.gioiTinh || ''} • ${p.namSinh || '---'}<br>
+            Ngày khám: <b>${p.ngayKham || '---'}</b> ${p.sdt ? '• SĐT: ' + p.sdt : ''}
+          </div>
+          <div class="pi-diag">
+            <b>Chẩn đoán:</b> ${formatDiagnosis(p.chanDoan)}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function openNewPatientModal() {
+      currentEditingIndex = -1;
+      document.getElementById("modalHeading").innerText = "Thêm bệnh nhân";
+      document.getElementById("btnDeletePatient").style.display = "none";
+      clearModalForm();
+
+      document.getElementById("mNgayKham").valueAsDate = new Date();
+      document.getElementById("mGioiTinh").value = "Nữ";
+      document.getElementById("mMaHS").value = "";
+      document.getElementById("patientModal").style.display = "flex";
+    }
+
+    function openEditModal(index) {
+      currentEditingIndex = index;
+      const p = patientList[index];
+      document.getElementById("modalHeading").innerText = "Xem & Sửa hồ sơ";
+      document.getElementById("btnDeletePatient").style.display = "block";
+
+      let nk = p.ngayKham || "";
+      if (nk.includes("T")) nk = nk.split("T")[0];
+
+      document.getElementById("mNgayKham").value = nk;
+      document.getElementById("mMaHS").value = p.maHS || "";
+      document.getElementById("mHoTen").value = (p.hoTen || "").toUpperCase();
+      document.getElementById("mGioiTinh").value = p.gioiTinh || "Nữ";
+      document.getElementById("mNamSinh").value = p.namSinh || "";
+      document.getElementById("mSdt").value = p.sdt || "";
+      document.getElementById("mDiaChi").value = p.diaChi || "";
+      document.getElementById("mGiaiPhauBenh").value = p.giaiPhauBenh || "";
+      document.getElementById("mChanDoan").value = p.chanDoan || "";
+      document.getElementById("mIodPhongXa").value = p.iodPhongXa || "";
+      document.getElementById("mThuocDieuTri").value = p.thuocDieuTri || "";
+      document.getElementById("mKhac").value = p.khac || "";
+
+      syncDropdownCheckboxesFromText('menuCd', 'mChanDoan', 'labelCd');
+      syncDropdownCheckboxesFromText('menuThuoc', 'mThuocDieuTri', 'labelThuoc');
+
+      const cls = p.cls || {};
+      const dates = cls.dates || [];
+      for (let i = 0; i < 6; i++) {
+        let dt = dates[i] || "";
+        if (dt.includes("T")) dt = dt.split("T")[0];
+        document.getElementById(`tDate${i}`).value = dt;
+        document.getElementById(`c_ft4_${i}`).value = (cls.ft4 && cls.ft4[i]) || "";
+        document.getElementById(`c_tsh_${i}`).value = (cls.tsh && cls.tsh[i]) || "";
+        document.getElementById(`c_tg_${i}`).value = (cls.tg && cls.tg[i]) || "";
+        document.getElementById(`c_trab_${i}`).value = (cls.trab && cls.trab[i]) || "";
+        document.getElementById(`c_sieuam_${i}`).value = (cls.sieuam && cls.sieuam[i]) || "";
+      }
+
+      document.getElementById("patientModal").style.display = "flex";
+    }
+
+    function closePatientModal() {
+      document.getElementById("patientModal").style.display = "none";
+    }
+
+    function clearModalForm() {
+      resetDropdown('menuCd', 'labelCd');
+      resetDropdown('menuThuoc', 'labelThuoc');
+      document.querySelectorAll("#patientModal input, #patientModal textarea").forEach(el => el.value = "");
+    }
+
+    async function savePatientModal() {
+      const ngayKham = document.getElementById("mNgayKham").value;
+      const maHS = document.getElementById("mMaHS").value.trim().toUpperCase();
+      const hoTen = document.getElementById("mHoTen").value.trim().toUpperCase();
+      const sdt = document.getElementById("mSdt").value.trim();
+
+      if (!ngayKham) { alert("Vui lòng chọn Ngày khám!"); return; }
+      if (!hoTen) { alert("Vui lòng nhập Họ và tên bệnh nhân!"); return; }
+      if (!maHS) { alert("Vui lòng kiểm tra Mã hồ sơ!"); return; }
+
+      const isDuplicate = patientList.some((p, idx) => {
+        if (idx === currentEditingIndex) return false;
+        let pDate = p.ngayKham || "";
+        if (pDate.includes("T")) pDate = pDate.split("T")[0];
+        return (p.maHS || "").toUpperCase() === maHS && pDate === ngayKham;
+      });
+
+      if (isDuplicate) {
+        alert(`Bệnh nhân có Mã [${maHS}] đã có hồ sơ trong ngày [${ngayKham}]! Vui lòng kiểm tra lại.`);
+        return;
+      }
+
+      if (sdt && !/^[0-9]{10}$/.test(sdt)) {
+        alert("Số điện thoại phải đúng 10 chữ số!");
+        return;
+      }
+
+      const clsData = { dates: [], ft4: [], tsh: [], tg: [], trab: [], sieuam: [] };
+      for (let i = 0; i < 6; i++) {
+        clsData.dates.push(document.getElementById(`tDate${i}`).value || "");
+        clsData.ft4.push(document.getElementById(`c_ft4_${i}`).value);
+        clsData.tsh.push(document.getElementById(`c_tsh_${i}`).value);
+        clsData.tg.push(document.getElementById(`c_tg_${i}`).value);
+        clsData.trab.push(document.getElementById(`c_trab_${i}`).value);
+        clsData.sieuam.push(document.getElementById(`c_sieuam_${i}`).value);
+      }
+
+      const patientData = {
+        stt: 1,
+        maHS: maHS,
+        ngayKham: ngayKham,
+        hoTen: hoTen,
+        gioiTinh: document.getElementById("mGioiTinh").value,
+        namSinh: document.getElementById("mNamSinh").value,
+        sdt: sdt,
+        diaChi: document.getElementById("mDiaChi").value,
+        giaiPhauBenh: document.getElementById("mGiaiPhauBenh").value,
+        chanDoan: document.getElementById("mChanDoan").value,
+        iodPhongXa: document.getElementById("mIodPhongXa").value,
+        thuocDieuTri: document.getElementById("mThuocDieuTri").value,
+        cls: clsData,
+        clsTableJson: JSON.stringify(clsData),
+        khac: document.getElementById("mKhac").value
+      };
+
+      if (currentEditingIndex === -1) {
+        patientList.push(patientData);
+      } else {
+        patientList[currentEditingIndex] = patientData;
+      }
+
+      sortPatientsByDate();
+      localStorage.setItem("app_patients_cache", JSON.stringify(patientList));
+      renderPatients();
+      closePatientModal();
+
+      showToast("💾 Đang bổ sung hồ sơ lên Google Sheet...");
+      // GỬI BỔ SUNG ĐÚNG HỒ SƠ NÀY LÊN GOOGLE SHEET (KHÔNG XOÁ CÁC HỒ SƠ CŨ)
+      await sendSavePatientToSheet(patientData);
+      showToast("✅ Đã bổ sung thành công lên Google Sheet!");
+    }
+
+    async function deleteCurrentPatient() {
       if (currentEditingIndex === -1) return;
       const p = patientList[currentEditingIndex];
-      if (confirm(`Bạn có chắc chắn muốn xóa hồ sơ: ${p.hoTen} (${p.maHS}) khỏi thiết bị này?`)) {
+      if (confirm(`Bạn có chắc chắn muốn xóa hồ sơ: ${p.hoTen} (${p.maHS})?`)) {
+        const deletedPatient = { ...p };
         patientList.splice(currentEditingIndex, 1);
         sortPatientsByDate();
         localStorage.setItem("app_patients_cache", JSON.stringify(patientList));
         renderPatients();
         closePatientModal();
-        showToast("🗑️ Đã xóa hồ sơ trên thiết bị!");
+
+        showToast("🗑️ Đang đồng bộ xóa trên Google Sheet...");
+        await sendDeletePatientToSheet(deletedPatient);
+        showToast("✅ Đã xóa hồ sơ!");
       }
     }
 
