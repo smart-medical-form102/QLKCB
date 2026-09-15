@@ -1095,37 +1095,74 @@
       }
     }
 
-    // GỬI LỆNH BỔ SUNG TOÀN BỘ HỒ SƠ LÊN SHEET KHI BẤM "XOÁ TOÀN BỘ DỮ LIỆU"
+    // ĐỒNG BỘ + XOÁ DỮ LIỆU TRÊN THIẾT BỊ
+    // QUAN TRỌNG: Không dùng action "SYNC_ALL" vì backend có thể xoá/ghi lại toàn bộ Sheet.
+    // Thay vào đó, gửi TỪNG hồ sơ bằng "SAVE_PATIENT" (cùng cơ chế với nút Lưu hồ sơ).
+    // SAVE_PATIENT có nhiệm vụ bổ sung hoặc cập nhật đúng hồ sơ, không xoá các dòng cũ khác.
     async function confirmDeleteAllData() {
       if (patientList.length === 0) {
         alert("Hiện không có hồ sơ nào trên máy!");
         return;
       }
 
-      if (!confirm("Hệ thống sẽ đồng bộ và gộp tất cả hồ sơ này lên Google Sheet (giữ nguyên dữ liệu cũ trên Sheet), sau đó mới xoá sạch bộ nhớ trên thiết bị này. Bạn có chắc chắn không?")) {
+      if (!confirm(
+        "Hệ thống sẽ gửi từng hồ sơ trên máy lên Google Sheet bằng chế độ BỔ SUNG/CẬP NHẬT, " +
+        "KHÔNG xoá dữ liệu cũ trên Sheet. Sau khi gửi xong mới xoá dữ liệu trên thiết bị. Bạn có chắc chắn không?"
+      )) {
         return;
       }
 
-      showToast("⏳ Đang đồng bộ gộp lên Google Sheet...");
+      const dataToSync = [...patientList];
+
+      showToast(`⏳ Đang đồng bộ 0/${dataToSync.length} hồ sơ...`, 60000);
 
       try {
-        await fetch(SCRIPT_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({
-            auth: TARGET_AUTH_HASH,
-            action: "SYNC_ALL",
-            data: patientList
-          })
-        });
+        for (let i = 0; i < dataToSync.length; i++) {
+          const patient = dataToSync[i];
 
+          await fetch(SCRIPT_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({
+              auth: TARGET_AUTH_HASH,
+              action: "SAVE_PATIENT",
+              patient: patient
+            })
+          });
+
+          showToast(`⏳ Đang đồng bộ ${i + 1}/${dataToSync.length} hồ sơ...`, 60000);
+
+          // Nghỉ rất ngắn để tránh gửi quá dồn dập tới Google Apps Script.
+          if (i < dataToSync.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 120));
+          }
+        }
+
+        // Chỉ xoá dữ liệu LOCAL sau khi đã gửi hết lên Sheet.
         patientList = [];
         localStorage.removeItem("app_patients_cache");
         renderPatients();
-        alert("✅ Đã đồng bộ gộp hồ sơ lên Google Sheet thành công (dữ liệu cũ được giữ nguyên), đồng thời đã dọn sạch bộ nhớ trên máy!");
-      } catch(err) {
-        alert("❌ Lỗi khi gửi dữ liệu lên Google Sheet!");
+
+        showToast("✅ Đã đồng bộ xong — dữ liệu cũ trên Google Sheet được giữ nguyên!", 3500);
+        alert(
+          `✅ Đã đồng bộ ${dataToSync.length} hồ sơ lên Google Sheet.\n\n` +
+          "Các hồ sơ được gửi theo chế độ BỔ SUNG/CẬP NHẬT và không dùng lệnh xoá toàn bộ Sheet.\n" +
+          "Dữ liệu trên thiết bị đã được xoá."
+        );
+      } catch (err) {
+        console.error("Lỗi đồng bộ trước khi xoá local:", err);
+
+        // Tuyệt đối KHÔNG xoá local nếu quá trình gửi gặp lỗi.
+        localStorage.setItem("app_patients_cache", JSON.stringify(patientList));
+        renderPatients();
+
+        showToast("❌ Đồng bộ lỗi — dữ liệu trên máy vẫn được giữ nguyên!", 4000);
+        alert(
+          "❌ Không thể hoàn tất đồng bộ.\n\n" +
+          "Dữ liệu trên thiết bị CHƯA bị xoá để tránh mất hồ sơ.\n" +
+          "Vui lòng kiểm tra kết nối rồi thực hiện lại."
+        );
       }
     }
 
